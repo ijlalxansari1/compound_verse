@@ -1,0 +1,412 @@
+@import "tailwindcss";
+
+/* ========================================
+   Compoundverse - Duolingo + Disney+ Theme
+   Vibrant, Playful, Premium Feel
+   ======================================== */
+
+:root {
+  /* Disney+ Dark Base */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --bg-elevated: #21262d;
+
+  /* Duolingo Vibrant Colors */
+  --green-primary: #58cc02;
+  --green-dark: #4caf00;
+  --green-glow: rgba(88, 204, 2, 0.4);
+
+  --gold-primary: #ffc800;
+  --gold-dark: #ff9d00;
+  --gold-glow: rgba(255, 200, 0, 0.4);
+
+  --blue-primary: #1cb0f6;
+  --blue-dark: #0095d4;
+  --blue-glow: rgba(28, 176, 246, 0.4);
+
+  --red-primary: #ff4b4b;
+  --red-dark: #ea2b2b;
+
+  --purple-primary: #ce82ff;
+  --purple-dark: #a855f7;
+
+  --orange-primary: #ff9600;
+  --orange-dark: #e88800;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+
+  /* Borders */
+  --border-default: #30363d;
+  --border-muted: #21262d;
+}
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Disney+ Style Background */
+body {
+  background: linear-gradient(180deg,
+      #0d1117 0%,
+      #0f1419 20%,
+      #0a0d12 50%,
+      #0d1117 100%);
+  color: var(--text-primary);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Ambient Glow Effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse at 30% 0%, rgba(88, 204, 2, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 100%, rgba(28, 176, 246, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 100% 50%, rgba(255, 200, 0, 0.05) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glass Card - Elevated */
+.glass-card {
+  background: linear-gradient(135deg,
+      rgba(28, 33, 40, 0.9) 0%,
+      rgba(22, 27, 34, 0.95) 100%);
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+/* Duolingo-style Button */
+.btn-duo {
+  background: var(--green-primary);
+  color: #1a3a00;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow:
+    0 4px 0 var(--green-dark),
+    0 8px 16px rgba(88, 204, 2, 0.3);
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-duo:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 0 var(--green-dark),
+    0 12px 24px rgba(88, 204, 2, 0.4);
+}
+
+.btn-duo:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 var(--green-dark),
+    0 4px 8px rgba(88, 204, 2, 0.2);
+}
+
+.btn-duo:disabled {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  box-shadow: 0 4px 0 var(--border-default);
+}
+
+/* XP Bar - Duolingo Style */
+.xp-track {
+  background: var(--bg-secondary);
+  border-radius: 99px;
+  height: 16px;
+  overflow: hidden;
+  border: 2px solid var(--border-default);
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-primary) 0%, var(--orange-primary) 100%);
+  border-radius: 99px;
+  position: relative;
+}
+
+.xp-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  right: 8px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 99px;
+}
+
+/* Streak Fire - Animated */
+.streak-fire {
+  font-size: 48px;
+  filter: drop-shadow(0 0 10px var(--orange-primary));
+  animation: fire-pulse 1s infinite;
+}
+
+@keyframes fire-pulse {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(-5deg);
+  }
+
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+/* Domain Cards */
+.domain-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-default);
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.domain-card:hover {
+  border-color: var(--border-default);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.domain-health {
+  border-left: 5px solid var(--green-primary);
+  background: linear-gradient(135deg, rgba(88, 204, 2, 0.1) 0%, transparent 50%);
+}
+
+.domain-faith {
+  border-left: 5px solid var(--gold-primary);
+  background: linear-gradient(135deg, rgba(255, 200, 0, 0.1) 0%, transparent 50%);
+}
+
+.domain-career {
+  border-left: 5px solid var(--blue-primary);
+  background: linear-gradient(135deg, rgba(28, 176, 246, 0.1) 0%, transparent 50%);
+}
+
+/* Checkbox - Duolingo Style */
+.checkbox-duo {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.checkbox-duo:hover {
+  border-color: var(--green-primary);
+}
+
+.checkbox-duo:checked {
+  background: var(--green-primary);
+  border-color: var(--green-primary);
+}
+
+.checkbox-duo:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #1a3a00;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Profile Card */
+.profile-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
+  border: 2px solid var(--border-default);
+  border-radius: 24px;
+}
+
+.avatar-ring {
+  background: linear-gradient(135deg, var(--gold-primary), var(--orange-primary));
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+/* Level Badge - Duolingo Crown */
+.level-badge {
+  background: linear-gradient(135deg, var(--gold-primary) 0%, var(--orange-primary) 100%);
+  border-radius: 50%;
+  padding: 12px;
+  box-shadow:
+    0 4px 0 var(--orange-dark),
+    0 8px 20px rgba(255, 150, 0, 0.4);
+}
+
+/* Tab Bar - Disney+ Style */
+.tab-bar {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-default);
+  border-radius: 16px;
+  padding: 6px;
+}
+
+.tab-item {
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.tab-item.active {
+  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-dark) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(28, 176, 246, 0.4);
+}
+
+/* Stats Badge */
+.stat-badge {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-default);
+  border-radius: 12px;
+  padding: 8px 16px;
+}
+
+/* Confetti */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  animation: confetti-fall 3s ease-out forwards;
+  z-index: 1000;
+}
+
+/* Music Player */
+.music-player {
+  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+  border: 2px solid var(--border-default);
+  border-radius: 20px;
+}
+
+/* Duolingo Colors for Text */
+.text-duo-green {
+  color: var(--green-primary);
+}
+
+.text-duo-gold {
+  color: var(--gold-primary);
+}
+
+.text-duo-blue {
+  color: var(--blue-primary);
+}
+
+.text-duo-red {
+  color: var(--red-primary);
+}
+
+.text-duo-purple {
+  color: var(--purple-primary);
+}
+
+.text-duo-orange {
+  color: var(--orange-primary);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--green-primary) 0%, var(--blue-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Animation Classes */
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite;
+}
+
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+@keyframes wiggle {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-10deg);
+  }
+
+  75% {
+    transform: rotate(10deg);
+  }
+}
