@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProfileCard from '@/components/ProfileCard';
 import XPBar from '@/components/XPBar';
@@ -14,6 +14,11 @@ import MusicPlayer from '@/components/MusicPlayer';
 import Confetti from '@/components/Confetti';
 import FirstTimeSetup from '@/components/FirstTimeSetup';
 import ExportPanel from '@/components/ExportPanel';
+import PanicButton from '@/components/PanicButton';
+import GroundingMode from '@/components/GroundingMode';
+import MomentumRing from '@/components/MomentumRing';
+import DomainManager from '@/components/DomainManager';
+import AdminDashboard from '@/components/AdminDashboard';
 import {
   getData,
   saveData,
@@ -27,6 +32,8 @@ import { checkBadges } from '@/lib/badges';
 import { getMessageType, generateFeedback } from '@/lib/coach';
 import { isFirstTimeUser, getSystemConfig, getUserSettings } from '@/lib/admin';
 import { getHourlyQuote } from '@/lib/quotes';
+import { calculateMomentum, MomentumResult } from '@/lib/momentum';
+import { getPanicState, resetDailyPanicState, getPanicDays } from '@/lib/panic';
 
 const HEALTH_ITEMS = [
   { value: 'pushups', label: 'Push-ups (any amount)' },
@@ -67,6 +74,8 @@ export default function Home() {
   const [lastSubmission, setLastSubmission] = useState<{ health: number; faith: number; career: number } | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [dailyQuote, setDailyQuote] = useState(getHourlyQuote());
+  const [isGrounding, setIsGrounding] = useState(false);
+  const [momentum, setMomentum] = useState<MomentumResult | null>(null);
 
   useEffect(() => {
     // Check if first-time user
@@ -74,10 +83,24 @@ export default function Home() {
       setShowSetup(true);
     }
 
+    // Reset daily panic state
+    resetDailyPanicState();
+
+    // Check if currently in grounding mode
+    const panicState = getPanicState();
+    if (panicState.isActive) {
+      setIsGrounding(true);
+    }
+
     const loadedData = getData();
     checkStreakOnLoad(loadedData);
     saveData(loadedData);
     setData(loadedData);
+
+    // Calculate momentum
+    const panicDays = getPanicDays();
+    const momentumResult = calculateMomentum(loadedData, panicDays);
+    setMomentum(momentumResult);
 
     if (hasTodayEntry(loadedData)) {
       setSubmitted(true);
@@ -157,6 +180,22 @@ export default function Home() {
     }
   };
 
+  // Handle entering grounding mode - MUST be before any conditional returns
+  const handlePanicActivate = useCallback(() => {
+    setIsGrounding(true);
+  }, []);
+
+  // Handle exiting grounding mode - MUST be before any conditional returns
+  const handleGroundingExit = useCallback(() => {
+    setIsGrounding(false);
+    // Recalculate momentum after exiting (day is now protected)
+    if (data) {
+      const panicDays = getPanicDays();
+      const momentumResult = calculateMomentum(data, panicDays);
+      setMomentum(momentumResult);
+    }
+  }, [data]);
+
   // Show setup wizard for first-time users
   if (showSetup) {
     return <FirstTimeSetup onComplete={handleSetupComplete} />;
@@ -176,6 +215,11 @@ export default function Home() {
     );
   }
 
+  // If in grounding mode, show only the grounding screen
+  if (isGrounding) {
+    return <GroundingMode onExit={handleGroundingExit} />;
+  }
+
   const userSettings = getUserSettings();
   const config = getSystemConfig();
   const todayFormatted = new Date().toLocaleDateString('en-US', {
@@ -187,6 +231,9 @@ export default function Home() {
   return (
     <>
       <Confetti trigger={showConfetti} />
+
+      {/* Panic Button - always visible */}
+      <PanicButton onActivate={handlePanicActivate} />
 
       <main className="relative z-10 max-w-lg mx-auto px-4 py-6 pb-32">
         {/* App Header */}
@@ -223,6 +270,13 @@ export default function Home() {
           activeDays={data.stats.activeDays}
           perfectDays={data.stats.perfectDays}
         />
+
+        {/* Momentum Ring - replaces brittle streak focus */}
+        {momentum && (
+          <section className="mb-6 flex justify-center">
+            <MomentumRing momentum={momentum} size="md" />
+          </section>
+        )}
 
         {/* XP Bar */}
         <section className="mb-6">
@@ -334,8 +388,8 @@ export default function Home() {
                     onClick={handleSubmit}
                     disabled={submitted}
                     className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 ${submitted
-                        ? 'bg-[#21262d] text-[#6e7681] cursor-not-allowed'
-                        : 'btn-duo'
+                      ? 'bg-[#21262d] text-[#6e7681] cursor-not-allowed'
+                      : 'btn-duo'
                       }`}
                     whileTap={submitted ? {} : { scale: 0.98 }}
                   >
@@ -473,6 +527,19 @@ export default function Home() {
                 <p>Timezone: {userSettings.timezone}</p>
                 <p>Coach Tone: {userSettings.coachTone}</p>
               </div>
+
+              {/* Domain Manager */}
+              <div className="glass-card rounded-2xl p-5">
+                <DomainManager />
+              </div>
+
+              {/* Admin Dashboard */}
+              <div className="glass-card rounded-2xl p-5">
+                <h3 className="font-semibold text-base mb-4 text-[#8b949e]">
+                  📊 Analytics & Settings
+                </h3>
+                <AdminDashboard />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -483,7 +550,8 @@ export default function Home() {
         </footer>
       </main>
 
-      {!config.music.enabledByDefault ? null : <MusicPlayer />}
+      {/* Music Player - always visible */}
+      <MusicPlayer />
     </>
   );
 }

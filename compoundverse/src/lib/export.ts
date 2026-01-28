@@ -33,7 +33,7 @@ export function exportToCSV(entries: Entry[]): string {
     return [headers.join(','), ...rows].join('\n');
 }
 
-// Generate Weekly Summary
+// Generate Weekly Summary with Narrative Storytelling
 export function generateWeeklySummary(data: HabitData): string {
     const today = new Date();
     const weekAgo = new Date(today);
@@ -48,46 +48,67 @@ export function generateWeeklySummary(data: HabitData): string {
     const faithDays = weeklyEntries.filter(e => e.faith === 1).length;
     const careerDays = weeklyEntries.filter(e => e.career === 1).length;
 
+    // Generate narrative based on activity
+    let narrative = '';
+    if (weeklyActive === 7) {
+        narrative = 'You showed up every day this week. That consistency speaks for itself.';
+    } else if (weeklyActive >= 5) {
+        narrative = `You showed up ${weeklyActive} out of 7 days. Strong pattern forming.`;
+    } else if (weeklyActive >= 3) {
+        narrative = `${weeklyActive} days this week. You're still in motion.`;
+    } else if (weeklyActive >= 1) {
+        narrative = `You showed up ${weeklyActive} time${weeklyActive > 1 ? 's' : ''} this week. Something beats nothing.`;
+    } else {
+        narrative = 'This week was quiet. Ready when you are.';
+    }
+
+    // Domain insight
+    const strongestDomain = Math.max(healthDays, faithDays, careerDays);
+    let domainInsight = '';
+    if (strongestDomain > 0) {
+        if (healthDays === strongestDomain) domainInsight = 'Health was your strongest domain this week.';
+        else if (faithDays === strongestDomain) domainInsight = 'Faith/Inner Life was your focus this week.';
+        else domainInsight = 'Career/Learning got the most attention.';
+    }
+
     return `
-COMPOUNDVERSE - WEEKLY SUMMARY
+COMPOUNDVERSE - WEEKLY REFLECTION
 Generated: ${today.toLocaleDateString()}
 Week: ${weekAgo.toLocaleDateString()} - ${today.toLocaleDateString()}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OVERVIEW
-• XP Earned This Week: ${weeklyXP}
-• Active Days: ${weeklyActive}/7
-• Perfect Days: ${weeklyPerfect}
+${narrative}
+${domainInsight}
 
-DOMAIN BREAKDOWN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THIS WEEK
+• Active Days: ${weeklyActive}/7
+• XP Earned: ${weeklyXP}
+${weeklyPerfect > 0 ? `• Complete Days: ${weeklyPerfect}` : ''}
+
+DOMAIN ACTIVITY
 • Health: ${healthDays}/7 days
 • Faith: ${faithDays}/7 days  
 • Career: ${careerDays}/7 days
 
-STREAK STATUS
-• Current Streak: ${data.stats.currentStreak} days
-• Longest Streak: ${data.stats.longestStreak} days
-
-OVERALL STATS
-• Total Level: ${data.stats.level}
+OVERALL JOURNEY
+• Level: ${data.stats.level}
 • Total XP: ${data.stats.totalXP}
-• Total Active Days: ${data.stats.activeDays}
-• Total Perfect Days: ${data.stats.perfectDays}
-• Badges Unlocked: ${data.stats.badges.length}
+• All-Time Active Days: ${data.stats.activeDays}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 DAILY LOG
 ${weeklyEntries.map(e => `
 ${e.date}
-  Health: ${e.health ? '✓' : '—'} | Faith: ${e.faith ? '✓' : '—'} | Career: ${e.career ? '✓' : '—'}
-  Score: ${e.dailyScore}/3 | XP: +${e.xpEarned}
-  ${e.reflection ? `Reflection: "${e.reflection}"` : ''}
+  ${e.health ? '✓' : '—'} Health | ${e.faith ? '✓' : '—'} Faith | ${e.career ? '✓' : '—'} Career
+  ${e.reflection ? `"${e.reflection}"` : ''}
 `).join('')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Small wins compound quietly.
+Patterns speak louder than numbers.
 CompoundVerse
 `.trim();
 }
