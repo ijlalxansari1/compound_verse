@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import NextImage from 'next/image';
 import ProfileCard from '@/components/ProfileCard';
 import XPBar from '@/components/XPBar';
 import StreakCounter from '@/components/StreakCounter';
@@ -19,13 +20,16 @@ import GroundingMode from '@/components/GroundingMode';
 import MomentumRing from '@/components/MomentumRing';
 import DomainManager from '@/components/DomainManager';
 import AdminDashboard from '@/components/AdminDashboard';
+import WeeklyReflectionCard from '@/components/WeeklyReflectionCard';
+import AppearanceSettings from '@/components/AppearanceSettings';
 import {
   getData,
   saveData,
   getToday,
   hasTodayEntry,
   getTodayEntry,
-  HabitData
+  HabitData,
+  Entry
 } from '@/lib/storage';
 import { calculateScore, updateStreak, checkStreakOnLoad } from '@/lib/scoring';
 import { checkBadges } from '@/lib/badges';
@@ -61,21 +65,30 @@ const TABS = [
   { id: 'settings', label: 'More', icon: '⚙️' },
 ];
 
+import {
+  getDomains,
+  getActiveDomains,
+  Domain
+} from '@/lib/domains';
+
 export default function Home() {
   const [data, setData] = useState<HabitData | null>(null);
   const [showSetup, setShowSetup] = useState(false);
   const [activeTab, setActiveTab] = useState('checkin');
-  const [healthChecked, setHealthChecked] = useState<string[]>([]);
-  const [faithChecked, setFaithChecked] = useState<string[]>([]);
-  const [careerChecked, setCareerChecked] = useState<string[]>([]);
+
+  // Dynamic state for checked items: { domainId: [itemValues] }
+  const [checkedItems, setCheckedItems] = useState<Record<string, string[]>>({});
+
   const [reflectionText, setReflectionText] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; xpNote: string } | null>(null);
-  const [lastSubmission, setLastSubmission] = useState<{ health: number; faith: number; career: number } | null>(null);
+  const [lastSubmission, setLastSubmission] = useState<Record<string, number> | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [dailyQuote, setDailyQuote] = useState(getHourlyQuote());
   const [isGrounding, setIsGrounding] = useState(false);
   const [momentum, setMomentum] = useState<MomentumResult | null>(null);
+  const [activeDomains, setActiveDomains] = useState<Domain[]>([]);
+  const [userSettings, setUserSettings] = useState<UserSettings>(getUserSettings());
 
   useEffect(() => {
     // Check if first-time user
@@ -97,6 +110,14 @@ export default function Home() {
     saveData(loadedData);
     setData(loadedData);
 
+    // Initial settings load
+    const currentSettings = getUserSettings();
+    setUserSettings(currentSettings);
+
+    // Load active domains
+    const domains = getActiveDomains();
+    setActiveDomains(domains);
+
     // Calculate momentum
     const panicDays = getPanicDays();
     const momentumResult = calculateMomentum(loadedData, panicDays);
@@ -106,7 +127,7 @@ export default function Home() {
       setSubmitted(true);
       const entry = getTodayEntry(loadedData);
       if (entry) {
-        setLastSubmission({ health: entry.health, faith: entry.faith, career: entry.career });
+        setLastSubmission(entry.domains);
         const msgType = getMessageType(entry.dailyScore, entry.perfectDay, entry.strongDay, entry.activeDay);
         setFeedback(generateFeedback(entry.xpEarned, entry.perfectDay, msgType));
       }
@@ -119,37 +140,36 @@ export default function Home() {
     window.location.reload();
   };
 
-  const handleToggle = (domain: 'health' | 'faith' | 'career', value: string) => {
-    const setters = {
-      health: setHealthChecked,
-      faith: setFaithChecked,
-      career: setCareerChecked
-    };
-    const current = domain === 'health' ? healthChecked : domain === 'faith' ? faithChecked : careerChecked;
+  const handleToggle = (domainId: string, value: string) => {
+    if (submitted) return;
 
-    if (current.includes(value)) {
-      setters[domain](current.filter(v => v !== value));
-    } else {
-      setters[domain]([...current, value]);
-    }
+    setCheckedItems(prev => {
+      const current = prev[domainId] || [];
+      const next = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      return { ...prev, [domainId]: next };
+    });
   };
 
   const handleSubmit = () => {
     if (!data || submitted) return;
 
     const config = getSystemConfig();
-    const health = healthChecked.length > 0 ? 1 : 0;
-    const faith = faithChecked.length > 0 ? 1 : 0;
-    const career = careerChecked.length > 0 ? 1 : 0;
+    const activeDomainIds = activeDomains.map(d => d.id);
 
-    const score = calculateScore(health, faith, career);
+    // Convert checkedItems (values) to binary domainsRecord (id -> 1/0)
+    const domainsRecord: Record<string, number> = {};
+    activeDomainIds.forEach(id => {
+      domainsRecord[id] = (checkedItems[id]?.length > 0) ? 1 : 0;
+    });
+
+    const score = calculateScore(domainsRecord, activeDomainIds);
     const today = getToday();
 
-    const entry = {
+    const entry: Entry = {
       date: today,
-      health,
-      faith,
-      career,
+      domains: domainsRecord,
       reflection: reflectionText,
       ...score
     };
@@ -169,7 +189,7 @@ export default function Home() {
     saveData(newData);
     setData(newData);
     setSubmitted(true);
-    setLastSubmission({ health, faith, career });
+    setLastSubmission(domainsRecord);
 
     const msgType = getMessageType(score.dailyScore, score.perfectDay, score.strongDay, score.activeDay);
     setFeedback(generateFeedback(score.xpEarned, score.perfectDay, msgType));
@@ -220,7 +240,6 @@ export default function Home() {
     return <GroundingMode onExit={handleGroundingExit} />;
   }
 
-  const userSettings = getUserSettings();
   const config = getSystemConfig();
   const todayFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -230,328 +249,345 @@ export default function Home() {
 
   return (
     <>
-      <Confetti trigger={showConfetti} />
+      <div className={userSettings.theme !== 'midnight' ? `theme-${userSettings.theme}` : ''}>
+        <Confetti trigger={showConfetti} />
 
-      {/* Panic Button - always visible */}
-      <PanicButton onActivate={handlePanicActivate} />
+        {/* Panic Button - always visible */}
+        <PanicButton onActivate={handlePanicActivate} />
 
-      <main className="relative z-10 max-w-lg mx-auto px-4 py-6 pb-32">
-        {/* App Header */}
-        <header className="text-center mb-6">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-3xl font-extrabold gradient-text tracking-tight">
-              CompoundVerse
-            </h1>
-            <p className="text-[#6e7681] text-sm mt-1">Level up your life, one day at a time</p>
-          </motion.div>
-        </header>
+        <main className="relative z-10 max-w-lg mx-auto px-4 py-6 pb-32">
+          {/* App Header */}
+          <header className="text-center mb-8">
+            <motion.div
+              initial={userSettings.animationIntensity === 'static' ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center gap-2"
+            >
+              <div className="relative w-16 h-16 mb-2">
+                <NextImage
+                  src="/logo.png"
+                  alt="CompoundVerse Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <h1 className="text-4xl font-black gradient-text tracking-tighter">
+                CompoundVerse
+              </h1>
+              <p className="text-[#6e7681] text-xs font-medium uppercase tracking-widest">
+                Life Operating System
+              </p>
+            </motion.div>
+          </header>
 
-        {/* Daily Quote */}
-        {config.coach.enableTips && (
-          <motion.div
-            className="glass-card rounded-2xl p-4 mb-6 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <p className="text-sm italic text-[#8b949e]">"{dailyQuote.text}"</p>
-            <p className="text-xs text-[#6e7681] mt-1">— {dailyQuote.author}</p>
-          </motion.div>
-        )}
+          {/* Daily Quote */}
+          {config.coach.enableTips && (
+            <motion.div
+              className="glass-card rounded-2xl p-4 mb-6 text-center"
+              initial={userSettings.animationIntensity === 'static' ? { opacity: 1 } : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <p className="text-sm italic text-[#8b949e]">"{dailyQuote.text}"</p>
+              <p className="text-xs text-[#6e7681] mt-1">— {dailyQuote.author}</p>
+            </motion.div>
+          )}
 
-        {/* Profile Card */}
-        <ProfileCard
-          level={data.stats.level}
-          totalXP={data.stats.totalXP}
-          currentStreak={data.stats.currentStreak}
-          longestStreak={data.stats.longestStreak}
-          activeDays={data.stats.activeDays}
-          perfectDays={data.stats.perfectDays}
-        />
+          {/* Profile Card */}
+          <ProfileCard
+            level={data.stats.level}
+            totalXP={data.stats.totalXP}
+            currentStreak={data.stats.currentStreak}
+            longestStreak={data.stats.longestStreak}
+            activeDays={data.stats.activeDays}
+            perfectDays={data.stats.perfectDays}
+          />
 
-        {/* Momentum Ring - replaces brittle streak focus */}
-        {momentum && (
-          <section className="mb-6 flex justify-center">
-            <MomentumRing momentum={momentum} size="md" />
+          {/* Momentum Ring - replaces brittle streak focus */}
+          {momentum && (
+            <section className="mb-6 flex justify-center">
+              <MomentumRing momentum={momentum} size="md" />
+            </section>
+          )}
+
+          {/* XP Bar */}
+          <section className="mb-6">
+            <XPBar currentXP={data.stats.totalXP} level={data.stats.level} />
           </section>
-        )}
 
-        {/* XP Bar */}
-        <section className="mb-6">
-          <XPBar currentXP={data.stats.totalXP} level={data.stats.level} />
-        </section>
-
-        {/* Tab Navigation */}
-        <div className="tab-bar flex gap-1 mb-6">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`tab-item flex-1 flex items-center justify-center gap-1 ${activeTab === tab.id ? 'active' : 'text-[#6e7681] hover:text-white'
-                }`}
-            >
-              <span>{tab.icon}</span>
-              <span className="font-semibold text-sm">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'checkin' && (
-            <motion.div
-              key="checkin"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              {submitted && feedback && lastSubmission && (
-                <section className="mb-6">
-                  <CoachFeedback
-                    message={feedback.message}
-                    xpNote={feedback.xpNote}
-                    health={lastSubmission.health}
-                    faith={lastSubmission.faith}
-                    career={lastSubmission.career}
-                  />
-                </section>
-              )}
-
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold flex items-center gap-2">
-                    📝 Daily Check-In
-                  </h2>
-                  <span className="text-sm text-[#8b949e]">{todayFormatted}</span>
-                </div>
-
-                <div className="space-y-4">
-                  {config.verses.health.enabled && (
-                    <DomainCard
-                      domain="health"
-                      title={config.verses.health.name}
-                      quote="I powered up my body"
-                      icon={config.verses.health.icon}
-                      items={HEALTH_ITEMS}
-                      checked={healthChecked}
-                      onToggle={(v) => handleToggle('health', v)}
-                      disabled={submitted}
-                    />
-                  )}
-
-                  {config.verses.faith.enabled && (
-                    <DomainCard
-                      domain="faith"
-                      title={config.verses.faith.name}
-                      quote="I nurtured my soul"
-                      icon={config.verses.faith.icon}
-                      items={FAITH_ITEMS}
-                      checked={faithChecked}
-                      onToggle={(v) => handleToggle('faith', v)}
-                      disabled={submitted}
-                    />
-                  )}
-
-                  {config.verses.career.enabled && (
-                    <DomainCard
-                      domain="career"
-                      title={config.verses.career.name}
-                      quote="I leveled up my mind"
-                      icon={config.verses.career.icon}
-                      items={CAREER_ITEMS}
-                      checked={careerChecked}
-                      onToggle={(v) => handleToggle('career', v)}
-                      disabled={submitted}
-                    />
-                  )}
-
-                  {config.features.reflections && (
-                    <div className="glass-card rounded-2xl p-5">
-                      <label className="flex items-center gap-2 text-sm text-[#8b949e] mb-3">
-                        <span className="text-xl">💭</span>
-                        One thing I learned or felt good about today
-                      </label>
-                      <textarea
-                        value={reflectionText}
-                        onChange={(e) => setReflectionText(e.target.value)}
-                        placeholder="Today I realized..."
-                        disabled={submitted}
-                        className="w-full bg-[#161b22] border-2 border-[#30363d] rounded-xl p-4 text-sm resize-y focus:outline-none focus:border-[#58cc02] disabled:opacity-50 transition-all"
-                        rows={3}
-                      />
-                    </div>
-                  )}
-
-                  <motion.button
-                    onClick={handleSubmit}
-                    disabled={submitted}
-                    className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 ${submitted
-                      ? 'bg-[#21262d] text-[#6e7681] cursor-not-allowed'
-                      : 'btn-duo'
-                      }`}
-                    whileTap={submitted ? {} : { scale: 0.98 }}
-                  >
-                    {submitted ? (
-                      <>✓ Completed Today</>
-                    ) : (
-                      <>
-                        Complete Check-In
-                        <motion.span
-                          animate={{ x: [0, 5, 0] }}
-                          transition={{ duration: 1, repeat: Infinity }}
-                        >
-                          →
-                        </motion.span>
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              </section>
-
-              <section className="mt-8">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  🏅 Achievements
-                </h2>
-                <BadgeGrid unlockedBadges={data.stats.badges} />
-              </section>
-            </motion.div>
-          )}
-
-          {activeTab === 'dashboard' && (
-            <motion.div
-              key="dashboard"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              <StatsDashboard data={data} />
-            </motion.div>
-          )}
-
-          {activeTab === 'history' && (
-            <motion.div
-              key="history"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-            >
-              {config.features.streakDisplay && (
-                <section className="mb-6">
-                  <StreakCounter
-                    currentStreak={data.stats.currentStreak}
-                    longestStreak={data.stats.longestStreak}
-                  />
-                </section>
-              )}
-
-              <section>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  📅 Last 28 Days
-                </h2>
-                <div className="glass-card rounded-2xl p-5">
-                  <HistoryGrid entries={data.entries} />
-                  <div className="flex justify-center gap-4 mt-4 text-xs text-[#6e7681]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded bg-gradient-to-br from-[#ffc800] to-[#ff9600]" />
-                      <span>Perfect</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded bg-[#58cc02]/40" />
-                      <span>Strong</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded bg-[#1cb0f6]/30" />
-                      <span>Active</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="mt-8">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  🏅 All Achievements
-                </h2>
-                <BadgeGrid unlockedBadges={data.stats.badges} />
-              </section>
-            </motion.div>
-          )}
-
-          {activeTab === 'settings' && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-4"
-            >
-              {/* Export */}
-              <ExportPanel data={data} />
-
-              {/* Admin Link */}
-              <a
-                href="/admin"
-                className="block w-full p-4 glass-card rounded-2xl hover:bg-[#21262d] transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">⚙️</span>
-                  <div>
-                    <div className="font-semibold text-[#1cb0f6]">Admin Dashboard</div>
-                    <div className="text-sm text-[#6e7681]">Configure system settings</div>
-                  </div>
-                  <span className="ml-auto text-[#6e7681]">→</span>
-                </div>
-              </a>
-
-              {/* Reset Setup */}
+          {/* Tab Navigation */}
+          <div className="tab-bar flex gap-1 mb-6">
+            {TABS.map((tab) => (
               <button
-                onClick={() => {
-                  localStorage.removeItem('compoundverse_user_settings');
-                  window.location.reload();
-                }}
-                className="w-full p-4 glass-card rounded-2xl hover:bg-[#21262d] transition-colors text-left"
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`tab-item flex-1 flex items-center justify-center gap-1 ${activeTab === tab.id ? 'active' : 'text-[#6e7681] hover:text-white'
+                  }`}
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">🔄</span>
-                  <div>
-                    <div className="font-semibold text-[#ffc800]">Restart Setup</div>
-                    <div className="text-sm text-[#6e7681]">Re-run the onboarding wizard</div>
-                  </div>
-                </div>
+                <span>{tab.icon}</span>
+                <span className="font-semibold text-sm">{tab.label}</span>
               </button>
+            ))}
+          </div>
 
-              {/* User Info */}
-              <div className="glass-card rounded-2xl p-5 text-center text-sm text-[#6e7681]">
-                <p>User: {userSettings.username}</p>
-                <p>Timezone: {userSettings.timezone}</p>
-                <p>Coach Tone: {userSettings.coachTone}</p>
-              </div>
+          {/* Tab Content */}
+          <AnimatePresence mode="wait">
+            {activeTab === 'checkin' && (
+              <motion.div
+                key="checkin"
+                initial={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: 20 }}
+              >
+                {submitted && feedback && lastSubmission && (
+                  <section className="mb-6">
+                    <CoachFeedback
+                      message={feedback.message}
+                      xpNote={feedback.xpNote}
+                      // Pass the first 3 core domains for backward compatibility in feedback
+                      health={lastSubmission['health'] || 0}
+                      faith={lastSubmission['faith'] || 0}
+                      career={lastSubmission['career'] || 0}
+                    />
+                  </section>
+                )}
 
-              {/* Domain Manager */}
-              <div className="glass-card rounded-2xl p-5">
-                <DomainManager />
-              </div>
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                      📝 Daily Check-In
+                    </h2>
+                    <span className="text-sm text-[#8b949e]">{todayFormatted}</span>
+                  </div>
 
-              {/* Admin Dashboard */}
-              <div className="glass-card rounded-2xl p-5">
-                <h3 className="font-semibold text-base mb-4 text-[#8b949e]">
-                  📊 Analytics & Settings
-                </h3>
-                <AdminDashboard />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <div className="space-y-4">
+                    {activeDomains.map((domain) => (
+                      <DomainCard
+                        key={domain.id}
+                        domain={domain.id}
+                        title={domain.name}
+                        quote={domain.intention}
+                        icon={domain.icon}
+                        items={domain.items.map(i => ({ value: i.id, label: i.label }))}
+                        checked={checkedItems[domain.id] || []}
+                        onToggle={(v) => handleToggle(domain.id, v)}
+                        disabled={submitted}
+                        color={domain.color}
+                      />
+                    ))}
 
-        {/* Footer */}
-        <footer className="text-center text-sm text-[#6e7681] py-8 mt-8">
-          Small wins compound quietly. 🌱
-        </footer>
-      </main>
+                    {config.features.reflections && (
+                      <div className="glass-card rounded-2xl p-5">
+                        <label className="flex items-center gap-2 text-sm text-[#8b949e] mb-3">
+                          <span className="text-xl">💭</span>
+                          One thing I learned or felt good about today
+                        </label>
+                        <textarea
+                          value={reflectionText}
+                          onChange={(e) => setReflectionText(e.target.value)}
+                          placeholder="Today I realized..."
+                          disabled={submitted}
+                          className="w-full bg-[#161b22] border-2 border-[#30363d] rounded-xl p-4 text-sm resize-y focus:outline-none focus:border-[#58cc02] disabled:opacity-50 transition-all"
+                          rows={3}
+                        />
+                      </div>
+                    )}
 
-      {/* Music Player - always visible */}
-      <MusicPlayer />
+                    <motion.button
+                      onClick={handleSubmit}
+                      disabled={submitted}
+                      className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 ${submitted
+                        ? 'bg-[#21262d] text-[#6e7681] cursor-not-allowed'
+                        : 'btn-duo'
+                        }`}
+                      whileTap={submitted || userSettings.animationIntensity === 'static' ? {} : { scale: 0.98 }}
+                    >
+                      {submitted ? (
+                        <>✓ Completed Today</>
+                      ) : (
+                        <>
+                          Complete Check-In
+                          <motion.span
+                            animate={userSettings.animationIntensity === 'static' ? {} : { x: [0, 5, 0] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                          >
+                            →
+                          </motion.span>
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </section>
+
+                <section className="mt-8">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    🏅 Achievements
+                  </h2>
+                  <BadgeGrid unlockedBadges={data.stats.badges} />
+                </section>
+              </motion.div>
+            )}
+
+            {activeTab === 'dashboard' && (
+              <motion.div
+                key="dashboard"
+                initial={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: 20 }}
+              >
+                {/* Weekly Reflection */}
+                <WeeklyReflectionCard data={data} />
+                <StatsDashboard data={data} />
+              </motion.div>
+            )}
+
+            {activeTab === 'history' && (
+              <motion.div
+                key="history"
+                initial={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: 20 }}
+              >
+                {config.features.streakDisplay && (
+                  <section className="mb-6">
+                    <StreakCounter
+                      currentStreak={data.stats.currentStreak}
+                      longestStreak={data.stats.longestStreak}
+                    />
+                  </section>
+                )}
+
+                <section>
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    📅 Last 28 Days
+                  </h2>
+                  <div className="glass-card rounded-2xl p-5">
+                    <HistoryGrid entries={data.entries} />
+                    <div className="flex justify-center gap-4 mt-4 text-xs text-[#6e7681]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-[#ffc800] to-[#ff9600]" />
+                        <span>Perfect</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-[#58cc02]/40" />
+                        <span>Strong</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-[#1cb0f6]/30" />
+                        <span>Active</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="mt-8">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    🏅 All Achievements
+                  </h2>
+                  <BadgeGrid unlockedBadges={data.stats.badges} />
+                </section>
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                initial={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={userSettings.animationIntensity === 'static' ? {} : { opacity: 0, x: 20 }}
+                className="space-y-4"
+              >
+                {/* Appearance Settings */}
+                <div className="glass-card rounded-2xl p-5">
+                  <h3 className="font-semibold text-base mb-4 text-[#8b949e] flex items-center gap-2">
+                    🎨 Appearance
+                  </h3>
+                  <AppearanceSettings
+                    settings={userSettings}
+                    onUpdate={(s) => setUserSettings(s)}
+                  />
+                </div>
+
+                {/* Export */}
+                <ExportPanel data={data} />
+
+                {/* Admin Link */}
+                <a
+                  href="/admin"
+                  className="block w-full p-4 glass-card rounded-2xl hover:bg-[#21262d] transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl">⚙️</span>
+                    <div>
+                      <div className="font-semibold text-[#1cb0f6]">Admin Dashboard</div>
+                      <div className="text-sm text-[#6e7681]">Configure system settings</div>
+                    </div>
+                    <span className="ml-auto text-[#6e7681]">→</span>
+                  </div>
+                </a>
+
+                {/* Reset Setup */}
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('compoundverse_user_settings');
+                    window.location.reload();
+                  }}
+                  className="w-full p-4 glass-card rounded-2xl hover:bg-[#21262d] transition-colors text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl">🔄</span>
+                    <div>
+                      <div className="font-semibold text-[#ffc800]">Restart Setup</div>
+                      <div className="text-sm text-[#6e7681]">Re-run the onboarding wizard</div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Legal Pages */}
+                <div className="glass-card rounded-2xl p-4 space-y-2">
+                  <h4 className="font-semibold text-sm text-[#8b949e] mb-3">About CompoundVerse</h4>
+                  <a href="/about" className="block p-3 rounded-lg hover:bg-[#21262d] transition-colors">
+                    <span className="text-sm">📖 About & Philosophy</span>
+                  </a>
+                  <a href="/how-it-works" className="block p-3 rounded-lg hover:bg-[#21262d] transition-colors">
+                    <span className="text-sm">❓ How It Works</span>
+                  </a>
+                  <a href="/privacy" className="block p-3 rounded-lg hover:bg-[#21262d] transition-colors">
+                    <span className="text-sm">🔒 Privacy & Data Ethics</span>
+                  </a>
+                </div>
+
+                {/* User Info */}
+                <div className="glass-card rounded-2xl p-5 text-center text-sm text-[#6e7681]">
+                  <p>User: {userSettings.username}</p>
+                  <p>Timezone: {userSettings.timezone}</p>
+                  <p>Coach Tone: {userSettings.coachTone}</p>
+                </div>
+
+                {/* Domain Manager */}
+                <div className="glass-card rounded-2xl p-5">
+                  <DomainManager />
+                </div>
+
+                {/* Admin Dashboard */}
+                <div className="glass-card rounded-2xl p-5">
+                  <h3 className="font-semibold text-base mb-4 text-[#8b949e]">
+                    📊 Analytics & Settings
+                  </h3>
+                  <AdminDashboard />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Footer */}
+          <footer className="text-center text-sm text-[#6e7681] py-8 mt-8">
+            Small wins compound quietly. 🌱
+          </footer>
+        </main>
+
+        {/* Music Player - always visible */}
+        <MusicPlayer />
+      </div>
     </>
   );
 }

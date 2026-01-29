@@ -44,6 +44,57 @@
   --border-muted: #21262d;
 }
 
+/* Aurora Theme (Teal/Emerald) */
+.theme-aurora {
+  --bg-primary: #0a1919;
+  --bg-secondary: #0f2424;
+  --bg-card: #152e2e;
+  --bg-elevated: #1b3838;
+  --green-primary: #10b981;
+  --green-dark: #059669;
+  --blue-primary: #34d399;
+  --blue-dark: #10b981;
+  --purple-primary: #6ee7b7;
+  --border-default: #1b3838;
+  --border-muted: #152e2e;
+  --blue-glow: rgba(52, 211, 153, 0.2);
+}
+
+/* Solar Theme (Amber/Gold) */
+.theme-solar {
+  --bg-primary: #1a160d;
+  --bg-secondary: #241f15;
+  --bg-card: #2e281c;
+  --bg-elevated: #383021;
+  --green-primary: #ffc800;
+  --green-dark: #cc9900;
+  --blue-primary: #fbbf24;
+  --blue-dark: #d97706;
+  --purple-primary: #f59e0b;
+  --border-default: #383021;
+  --border-muted: #2e281c;
+  --gold-glow: rgba(255, 200, 0, 0.2);
+}
+
+/* Monochrome Theme (Black/White/Gray) */
+.theme-monochrome {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #121212;
+  --bg-elevated: #1a1a1a;
+  --green-primary: #ffffff;
+  --green-dark: #cccccc;
+  --blue-primary: #eeeeee;
+  --blue-dark: #dddddd;
+  --purple-primary: #ffffff;
+  --border-default: #222222;
+  --border-muted: #111111;
+  --text-secondary: #aaaaaa;
+  --text-muted: #888888;
+  --green-glow: rgba(255, 255, 255, 0.1);
+}
+
+
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);

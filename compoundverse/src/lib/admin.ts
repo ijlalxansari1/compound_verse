@@ -51,8 +51,12 @@ export interface UserSettings {
     musicEnabled: boolean;
     setupComplete: boolean;
     // Onboarding preferences
+    onboarding?: any;
     minimumViableDay: 'easy' | 'moderate' | 'challenging';
     reflectionPreference: 'faith' | 'philosophical' | 'none';
+    // Appearance
+    theme: 'midnight' | 'aurora' | 'solar' | 'monochrome';
+    animationIntensity: 'full' | 'reduced' | 'static';
     selectedDomains: string[];
 }
 
@@ -100,6 +104,8 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
     minimumViableDay: 'easy',
     reflectionPreference: 'philosophical',
     selectedDomains: ['health', 'faith', 'career'],
+    theme: 'midnight',
+    animationIntensity: 'full',
 };
 
 const CONFIG_KEY = 'compoundverse_config';

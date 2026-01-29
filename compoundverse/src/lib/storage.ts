@@ -5,15 +5,18 @@
 
 export interface Entry {
     date: string;
-    health: number;
-    faith: number;
-    career: number;
+    // Mapping of domainId -> 1 (checked) or 0 (unchecked)
+    domains: Record<string, number>;
     reflection: string;
     dailyScore: number;
     activeDay: number;
     strongDay: number;
     perfectDay: number;
     xpEarned: number;
+    // Legacy support (optional)
+    health?: number;
+    faith?: number;
+    career?: number;
 }
 
 export interface Stats {

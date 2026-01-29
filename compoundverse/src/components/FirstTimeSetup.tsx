@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { saveUserSettings, completeSetup, getUserSettings } from '@/lib/admin';
+import OnboardingSlides, { OnboardingSelections } from './OnboardingSlides';
 
 const AVATARS = ['🦁', '🐯', '🦊', '🐻', '🐼', '🦄', '🐲', '🦅', '🐺', '🦋'];
 
@@ -24,11 +25,18 @@ interface FirstTimeSetupProps {
 }
 
 export default function FirstTimeSetup({ onComplete }: FirstTimeSetupProps) {
+    const [showSlides, setShowSlides] = useState(true);
+    const [onboardingData, setOnboardingData] = useState<OnboardingSelections | null>(null);
     const [step, setStep] = useState(1);
     const [username, setUsername] = useState('');
     const [avatar, setAvatar] = useState('🦁');
     const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [coachTone, setCoachTone] = useState<'gentle' | 'neutral' | 'direct'>('neutral');
+
+    const handleOnboardingComplete = (selections: OnboardingSelections) => {
+        setOnboardingData(selections);
+        setShowSlides(false);
+    };
 
     const handleComplete = () => {
         const settings = getUserSettings();
@@ -39,10 +47,16 @@ export default function FirstTimeSetup({ onComplete }: FirstTimeSetupProps) {
             timezone,
             coachTone,
             setupComplete: true,
+            // Add onboarding preferences to settings
+            onboarding: onboardingData
         });
         completeSetup();
         onComplete();
     };
+
+    if (showSlides) {
+        return <OnboardingSlides onComplete={handleOnboardingComplete} />;
+    }
 
     const totalSteps = 4;
 
@@ -116,8 +130,8 @@ export default function FirstTimeSetup({ onComplete }: FirstTimeSetupProps) {
                                         key={a}
                                         onClick={() => setAvatar(a)}
                                         className={`text-3xl p-3 rounded-xl transition-all ${avatar === a
-                                                ? 'bg-[#ffc800] scale-110 shadow-lg'
-                                                : 'bg-[#21262d] hover:bg-[#30363d]'
+                                            ? 'bg-[#ffc800] scale-110 shadow-lg'
+                                            : 'bg-[#21262d] hover:bg-[#30363d]'
                                             }`}
                                         whileTap={{ scale: 0.95 }}
                                     >
@@ -211,8 +225,8 @@ export default function FirstTimeSetup({ onComplete }: FirstTimeSetupProps) {
                                         key={id}
                                         onClick={() => setCoachTone(id as typeof coachTone)}
                                         className={`w-full p-4 rounded-xl text-left transition-all border-2 ${coachTone === id
-                                                ? 'bg-[#58cc02]/20 border-[#58cc02]'
-                                                : 'bg-[#161b22] border-[#30363d] hover:border-[#58cc02]/50'
+                                            ? 'bg-[#58cc02]/20 border-[#58cc02]'
+                                            : 'bg-[#161b22] border-[#30363d] hover:border-[#58cc02]/50'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">

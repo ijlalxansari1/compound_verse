@@ -12,11 +12,18 @@ export interface ScoreResult {
     xpEarned: number;
 }
 
-export function calculateScore(health: number, faith: number, career: number): ScoreResult {
-    const dailyScore = health + faith + career;
+export function calculateScore(
+    checkedDomains: Record<string, number>,
+    activeDomainIds: string[]
+): ScoreResult {
+    const dailyScore = Object.values(checkedDomains).reduce((sum, val) => sum + (val || 0), 0);
     const activeDay = dailyScore >= 1 ? 1 : 0;
     const strongDay = dailyScore >= 2 ? 1 : 0;
-    const perfectDay = dailyScore === 3 ? 1 : 0;
+
+    // Perfect day = all active domains completed
+    const activeCount = activeDomainIds.length;
+    const perfectDay = (activeCount > 0 && dailyScore === activeCount) ? 1 : 0;
+
     const xpEarned = dailyScore + (perfectDay ? 1 : 0); // Bonus XP for perfect day
 
     return { dailyScore, activeDay, strongDay, perfectDay, xpEarned };
@@ -64,6 +71,9 @@ export function checkStreakOnLoad(data: HabitData): void {
     }
 }
 
-export function countDomain(entries: Entry[], domain: 'health' | 'faith' | 'career'): number {
-    return entries.filter(e => e[domain] === 1).length;
+export function countDomain(entries: Entry[], domainId: string): number {
+    return entries.filter(e => {
+        const val = e.domains ? e.domains[domainId] : (e as any)[domainId];
+        return val === 1;
+    }).length;
 }

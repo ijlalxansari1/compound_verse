@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 interface DomainCardProps {
-    domain: 'health' | 'faith' | 'career';
+    domain: string;
     title: string;
     quote: string;
     icon: string;
@@ -11,9 +11,10 @@ interface DomainCardProps {
     checked: string[];
     onToggle: (value: string) => void;
     disabled?: boolean;
+    color?: string;
 }
 
-const domainStyles = {
+const defaultDomainStyles: Record<string, { color: string; className: string }> = {
     health: {
         color: '#58cc02',
         className: 'domain-health'
@@ -36,9 +37,13 @@ export default function DomainCard({
     items,
     checked,
     onToggle,
-    disabled = false
+    disabled = false,
+    color
 }: DomainCardProps) {
-    const style = domainStyles[domain];
+    const style = defaultDomainStyles[domain] || {
+        color: color || '#58cc02',
+        className: 'domain-custom'
+    };
     const checkedCount = checked.length;
     const totalItems = items.length;
     const progress = (checkedCount / totalItems) * 100;
