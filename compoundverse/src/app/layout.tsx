@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Compoundverse - Level Up Your Life",
-  description: "AI Gamified Habit Tracker for Health, Faith, and Career",
+  title: "CompoundVerse - Small Wins Compound Quietly",
+  description: "A calm, ethical life system for consistent growth across health, faith, and career",
+  icons: {
+    icon: '/favicon.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
