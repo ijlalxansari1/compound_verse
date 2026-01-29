@@ -50,6 +50,10 @@ export interface UserSettings {
     coachTone: 'gentle' | 'neutral' | 'direct';
     musicEnabled: boolean;
     setupComplete: boolean;
+    // Onboarding preferences
+    minimumViableDay: 'easy' | 'moderate' | 'challenging';
+    reflectionPreference: 'faith' | 'philosophical' | 'none';
+    selectedDomains: string[];
 }
 
 const DEFAULT_CONFIG: SystemConfig = {
@@ -93,6 +97,9 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
     coachTone: 'neutral',
     musicEnabled: false,
     setupComplete: false,
+    minimumViableDay: 'easy',
+    reflectionPreference: 'philosophical',
+    selectedDomains: ['health', 'faith', 'career'],
 };
 
 const CONFIG_KEY = 'compoundverse_config';

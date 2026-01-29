@@ -421,9 +421,9 @@ body::before {
 
 /* Breathing circle - soft glow */
 .breathing-circle {
-  background: linear-gradient(135deg, 
-    rgba(139, 92, 246, 0.3) 0%, 
-    rgba(28, 176, 246, 0.3) 100%);
+  background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.3) 0%,
+      rgba(28, 176, 246, 0.3) 100%);
   border-radius: 50%;
   transition: transform 4s ease-in-out;
 }
@@ -459,10 +459,13 @@ body::before {
 
 /* Panic button subtle pulse */
 @keyframes subtle-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.3;
   }
+
   50% {
     transform: scale(1.2);
     opacity: 0;
@@ -471,4 +474,212 @@ body::before {
 
 .panic-pulse {
   animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN SYSTEM
+   Mobile-first, then tablet, then desktop
+   ======================================== */
+
+/* Container - Adaptive max-widths */
+.container-app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Mobile (default) - Up to 639px */
+/* Everything is mobile-first, so base styles are for mobile */
+
+/* Tablet - 640px to 1023px */
+@media (min-width: 640px) {
+  .container-app {
+    max-width: 560px;
+    padding: 0 24px;
+  }
+
+  .glass-card {
+    padding: 20px;
+  }
+
+  /* Two-column grid for tablet */
+  .responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* Tab bar horizontal on tablet */
+  .tab-bar {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+/* Desktop - 1024px and up */
+@media (min-width: 1024px) {
+  .container-app {
+    max-width: 680px;
+    padding: 0 32px;
+  }
+
+  /* Breathing space on desktop */
+  body {
+    padding-top: 32px;
+  }
+
+  .glass-card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  /* Cards don't stretch */
+  .domain-card,
+  .profile-card {
+    max-width: 100%;
+  }
+
+  /* Larger profile on desktop */
+  .avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+  }
+
+  /* More comfortable spacing */
+  .responsive-grid {
+    gap: 20px;
+  }
+}
+
+/* Large Desktop - 1280px and up */
+@media (min-width: 1280px) {
+  .container-app {
+    max-width: 720px;
+  }
+
+  /* Center content with max breathing room */
+  body {
+    padding-top: 48px;
+  }
+}
+
+/* Responsive text utilities */
+.text-responsive-sm {
+  font-size: 12px;
+}
+
+.text-responsive-base {
+  font-size: 14px;
+}
+
+.text-responsive-lg {
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-sm {
+    font-size: 13px;
+  }
+
+  .text-responsive-base {
+    font-size: 15px;
+  }
+
+  .text-responsive-lg {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-sm {
+    font-size: 14px;
+  }
+
+  .text-responsive-base {
+    font-size: 16px;
+  }
+
+  .text-responsive-lg {
+    font-size: 20px;
+  }
+}
+
+/* Responsive spacing */
+.space-responsive {
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .space-responsive {
+    margin-bottom: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .space-responsive {
+    margin-bottom: 24px;
+  }
+}
+
+/* Fixed bottom nav positioning */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 40;
+}
+
+@media (min-width: 640px) {
+  .bottom-nav {
+    padding: 16px 24px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent stretched cards on large screens */
+.card-constrained {
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .card-constrained {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Hide on mobile / Show on desktop utilities */
+.hide-mobile {
+  display: none;
+}
+
+.show-mobile {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .hide-mobile {
+    display: block;
+  }
+
+  .show-mobile {
+    display: none;
+  }
+}
+
+/* Safe area padding for mobile devices */
+.safe-area-top {
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.safe-area-bottom {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
