@@ -118,33 +118,45 @@ export function getSystemConfig(): SystemConfig {
 
     const stored = localStorage.getItem(CONFIG_KEY);
     if (stored) {
-        return { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
+        return {
+            ...DEFAULT_CONFIG,
+            ...JSON.parse(stored),
+            xpRules: { ...DEFAULT_CONFIG.xpRules, ...JSON.parse(stored).xpRules },
+            verses: { ...DEFAULT_CONFIG.verses, ...JSON.parse(stored).verses },
+            coach: { ...DEFAULT_CONFIG.coach, ...JSON.parse(stored).coach },
+            music: { ...DEFAULT_CONFIG.music, ...JSON.parse(stored).music },
+            features: { ...DEFAULT_CONFIG.features, ...JSON.parse(stored).features },
+        };
     }
     return { ...DEFAULT_CONFIG };
 }
 
-export function saveSystemConfig(config: SystemConfig): void {
+export function saveSystemConfig(config: SystemConfig, userId?: string): void {
     if (typeof window === 'undefined') return;
 
     localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-    logAdminChange('config_update', config);
+
+    // Log the change
+    logAdminChange('config_update', config, userId);
 }
 
 // User Settings Functions
-export function getUserSettings(): UserSettings {
+export function getUserSettings(userId?: string): UserSettings {
     if (typeof window === 'undefined') return DEFAULT_USER_SETTINGS;
 
-    const stored = localStorage.getItem(USER_SETTINGS_KEY);
+    const key = userId ? `${USER_SETTINGS_KEY}_${userId}` : USER_SETTINGS_KEY;
+    const stored = localStorage.getItem(key);
     if (stored) {
         return { ...DEFAULT_USER_SETTINGS, ...JSON.parse(stored) };
     }
     return { ...DEFAULT_USER_SETTINGS };
 }
 
-export function saveUserSettings(settings: UserSettings): void {
+export function saveUserSettings(settings: UserSettings, userId?: string): void {
     if (typeof window === 'undefined') return;
 
-    localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(settings));
+    const key = userId ? `${USER_SETTINGS_KEY}_${userId}` : USER_SETTINGS_KEY;
+    localStorage.setItem(key, JSON.stringify(settings));
 }
 
 export function isFirstTimeUser(): boolean {
@@ -165,10 +177,10 @@ interface AdminLogEntry {
     data: unknown;
 }
 
-export function logAdminChange(action: string, data: unknown): void {
+export function logAdminChange(action: string, data: unknown, userId?: string): void {
     if (typeof window === 'undefined') return;
 
-    const logs = getAdminLog();
+    const logs = getAdminLog(userId);
     logs.push({
         timestamp: new Date().toISOString(),
         action,
@@ -180,20 +192,23 @@ export function logAdminChange(action: string, data: unknown): void {
         logs.shift();
     }
 
-    localStorage.setItem(ADMIN_LOG_KEY, JSON.stringify(logs));
+    const key = userId ? `${ADMIN_LOG_KEY}_${userId}` : ADMIN_LOG_KEY;
+    localStorage.setItem(key, JSON.stringify(logs));
 }
 
-export function getAdminLog(): AdminLogEntry[] {
+export function getAdminLog(userId?: string): AdminLogEntry[] {
     if (typeof window === 'undefined') return [];
 
-    const stored = localStorage.getItem(ADMIN_LOG_KEY);
+    const key = userId ? `${ADMIN_LOG_KEY}_${userId}` : ADMIN_LOG_KEY;
+    const stored = localStorage.getItem(key);
     if (stored) {
         return JSON.parse(stored);
     }
     return [];
 }
 
-export function clearAdminLog(): void {
+export function clearAdminLog(userId?: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(ADMIN_LOG_KEY);
+    const key = userId ? `${ADMIN_LOG_KEY}_${userId}` : ADMIN_LOG_KEY;
+    localStorage.removeItem(key);
 }

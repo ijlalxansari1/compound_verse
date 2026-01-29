@@ -22,7 +22,8 @@ export interface Domain {
     createdAt: string;
 }
 
-const DOMAINS_KEY = 'compoundverse_domains';
+const DOMAINS_KEY_PREFIX = 'compoundverse_domains_';
+const GUEST_DOMAINS_KEY = 'compoundverse_domains';
 const MAX_ACTIVE_DOMAINS = 5;
 
 // Default core domains (always present)
@@ -84,10 +85,11 @@ const DEFAULT_DOMAINS: Domain[] = [
 /**
  * Get all domains from storage
  */
-export function getDomains(): Domain[] {
+export function getDomains(userId?: string): Domain[] {
     if (typeof window === 'undefined') return DEFAULT_DOMAINS;
 
-    const stored = localStorage.getItem(DOMAINS_KEY);
+    const key = userId ? `${DOMAINS_KEY_PREFIX}${userId}` : GUEST_DOMAINS_KEY;
+    const stored = localStorage.getItem(key);
     if (stored) {
         const domains = JSON.parse(stored) as Domain[];
         // Ensure core domains exist
@@ -107,30 +109,31 @@ export function getDomains(): Domain[] {
 /**
  * Save domains to storage
  */
-export function saveDomains(domains: Domain[]): void {
+export function saveDomains(domains: Domain[], userId?: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(DOMAINS_KEY, JSON.stringify(domains));
+    const key = userId ? `${DOMAINS_KEY_PREFIX}${userId}` : GUEST_DOMAINS_KEY;
+    localStorage.setItem(key, JSON.stringify(domains));
 }
 
 /**
  * Get only active (non-archived) domains
  */
-export function getActiveDomains(): Domain[] {
-    return getDomains().filter(d => !d.archived && d.enabled);
+export function getActiveDomains(userId?: string): Domain[] {
+    return getDomains(userId).filter(d => !d.archived && d.enabled);
 }
 
 /**
  * Get count of active domains
  */
-export function getActiveDomainCount(): number {
-    return getActiveDomains().length;
+export function getActiveDomainCount(userId?: string): number {
+    return getActiveDomains(userId).length;
 }
 
 /**
  * Check if user can add more domains
  */
-export function canAddDomain(): boolean {
-    return getActiveDomainCount() < MAX_ACTIVE_DOMAINS;
+export function canAddDomain(userId?: string): boolean {
+    return getActiveDomainCount(userId) < MAX_ACTIVE_DOMAINS;
 }
 
 /**
@@ -141,13 +144,14 @@ export function addDomain(
     icon: string,
     intention: string,
     items: MicroAction[] = [],
-    color: string = '#8b5cf6'
+    color: string = '#8b5cf6',
+    userId?: string
 ): Domain | null {
-    if (!canAddDomain()) {
+    if (!canAddDomain(userId)) {
         return null; // Max domains reached
     }
 
-    const domains = getDomains();
+    const domains = getDomains(userId);
     const newDomain: Domain = {
         id: `custom_${Date.now()}`,
         name,
@@ -163,15 +167,15 @@ export function addDomain(
     };
 
     domains.push(newDomain);
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return newDomain;
 }
 
 /**
  * Archive a domain (zero penalty)
  */
-export function archiveDomain(domainId: string): boolean {
-    const domains = getDomains();
+export function archiveDomain(domainId: string, userId?: string): boolean {
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
@@ -179,52 +183,52 @@ export function archiveDomain(domainId: string): boolean {
 
     domain.archived = true;
     domain.enabled = false;
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return true;
 }
 
 /**
  * Restore an archived domain
  */
-export function restoreDomain(domainId: string): boolean {
-    if (!canAddDomain()) return false;
+export function restoreDomain(domainId: string, userId?: string): boolean {
+    if (!canAddDomain(userId)) return false;
 
-    const domains = getDomains();
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
 
     domain.archived = false;
     domain.enabled = true;
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return true;
 }
 
 /**
  * Toggle XP for a domain
  */
-export function toggleDomainXP(domainId: string): boolean {
-    const domains = getDomains();
+export function toggleDomainXP(domainId: string, userId?: string): boolean {
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
 
     domain.xpEnabled = !domain.xpEnabled;
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return domain.xpEnabled;
 }
 
 /**
  * Update domain items (micro-actions)
  */
-export function updateDomainItems(domainId: string, items: MicroAction[]): boolean {
-    const domains = getDomains();
+export function updateDomainItems(domainId: string, items: MicroAction[], userId?: string): boolean {
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
 
     domain.items = items;
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return true;
 }
 
@@ -233,43 +237,44 @@ export function updateDomainItems(domainId: string, items: MicroAction[]): boole
  */
 export function updateDomain(
     domainId: string,
-    updates: Partial<Pick<Domain, 'name' | 'icon' | 'intention' | 'color'>>
+    updates: Partial<Pick<Domain, 'name' | 'icon' | 'intention' | 'color'>>,
+    userId?: string
 ): boolean {
-    const domains = getDomains();
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
 
     Object.assign(domain, updates);
-    saveDomains(domains);
+    saveDomains(domains, userId);
     return true;
 }
 
 /**
  * Get a specific domain by ID
  */
-export function getDomainById(domainId: string): Domain | undefined {
-    return getDomains().find(d => d.id === domainId);
+export function getDomainById(domainId: string, userId?: string): Domain | undefined {
+    return getDomains(userId).find(d => d.id === domainId);
 }
 
 /**
  * Get archived domains
  */
-export function getArchivedDomains(): Domain[] {
-    return getDomains().filter(d => d.archived);
+export function getArchivedDomains(userId?: string): Domain[] {
+    return getDomains(userId).filter(d => d.archived);
 }
 
 /**
  * Delete a custom domain permanently
  */
-export function deleteDomain(domainId: string): boolean {
-    const domains = getDomains();
+export function deleteDomain(domainId: string, userId?: string): boolean {
+    const domains = getDomains(userId);
     const domain = domains.find(d => d.id === domainId);
 
     if (!domain) return false;
     if (domain.isCore) return false; // Core domains cannot be deleted
 
     const filtered = domains.filter(d => d.id !== domainId);
-    saveDomains(filtered);
+    saveDomains(filtered, userId);
     return true;
 }

@@ -23,9 +23,10 @@ const DOMAIN_COLORS = ['#8b5cf6', '#ec4899', '#f97316', '#14b8a6', '#6366f1'];
 
 interface DomainManagerProps {
     onDomainsChange?: () => void;
+    userId?: string;
 }
 
-export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
+export default function DomainManager({ onDomainsChange, userId }: DomainManagerProps) {
     const [domains, setDomains] = useState<Domain[]>([]);
     const [archivedDomains, setArchivedDomains] = useState<Domain[]>([]);
     const [showAddForm, setShowAddForm] = useState(false);
@@ -41,11 +42,11 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
 
     useEffect(() => {
         loadDomains();
-    }, []);
+    }, [userId]);
 
     const loadDomains = () => {
-        setDomains(getActiveDomains());
-        setArchivedDomains(getArchivedDomains());
+        setDomains(getActiveDomains(userId));
+        setArchivedDomains(getArchivedDomains(userId));
     };
 
     const handleAddDomain = () => {
@@ -63,7 +64,8 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
             newIcon,
             newIntention.trim() || 'Custom domain',
             items,
-            newColor
+            newColor,
+            userId
         );
 
         if (result) {
@@ -78,14 +80,14 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
     };
 
     const handleArchive = (domainId: string) => {
-        if (archiveDomain(domainId)) {
+        if (archiveDomain(domainId, userId)) {
             loadDomains();
             onDomainsChange?.();
         }
     };
 
     const handleRestore = (domainId: string) => {
-        if (restoreDomain(domainId)) {
+        if (restoreDomain(domainId, userId)) {
             loadDomains();
             onDomainsChange?.();
         }
@@ -93,7 +95,7 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
 
     const handleDelete = (domainId: string) => {
         if (confirm('Delete this domain permanently?')) {
-            if (deleteDomain(domainId)) {
+            if (deleteDomain(domainId, userId)) {
                 loadDomains();
                 onDomainsChange?.();
             }
@@ -101,7 +103,7 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
     };
 
     const handleToggleXP = (domainId: string) => {
-        toggleDomainXP(domainId);
+        toggleDomainXP(domainId, userId);
         loadDomains();
         onDomainsChange?.();
     };
@@ -116,8 +118,8 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
         setNewItems(updated);
     };
 
-    const activeCount = getActiveDomainCount();
-    const canAdd = canAddDomain();
+    const activeCount = getActiveDomainCount(userId);
+    const canAdd = canAddDomain(userId);
 
     return (
         <div className="space-y-4">
@@ -164,8 +166,8 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
                                         key={icon}
                                         onClick={() => setNewIcon(icon)}
                                         className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${newIcon === icon
-                                                ? 'bg-[#1cb0f6]/20 border-2 border-[#1cb0f6]'
-                                                : 'bg-[#161b22] border border-[#30363d]'
+                                            ? 'bg-[#1cb0f6]/20 border-2 border-[#1cb0f6]'
+                                            : 'bg-[#161b22] border border-[#30363d]'
                                             }`}
                                     >
                                         {icon}
@@ -249,8 +251,8 @@ export default function DomainManager({ onDomainsChange }: DomainManagerProps) {
                             <button
                                 onClick={() => handleToggleXP(domain.id)}
                                 className={`text-xs px-2 py-1 rounded ${domain.xpEnabled
-                                        ? 'bg-[#58cc02]/20 text-[#58cc02]'
-                                        : 'bg-[#30363d] text-[#6e7681]'
+                                    ? 'bg-[#58cc02]/20 text-[#58cc02]'
+                                    : 'bg-[#30363d] text-[#6e7681]'
                                     }`}
                                 title={domain.xpEnabled ? 'XP enabled' : 'XP disabled'}
                             >

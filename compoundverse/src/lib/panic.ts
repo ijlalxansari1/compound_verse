@@ -13,7 +13,8 @@ export interface PanicState {
     groundingDurationMinutes: number; // User configurable (10-20)
 }
 
-const PANIC_STATE_KEY = 'compoundverse_panic';
+const PANIC_STATE_KEY_PREFIX = 'compoundverse_panic_';
+const GUEST_PANIC_STATE_KEY = 'compoundverse_panic';
 const DEFAULT_GROUNDING_DURATION = 15; // minutes
 
 const DEFAULT_PANIC_STATE: PanicState = {
@@ -29,10 +30,11 @@ const DEFAULT_PANIC_STATE: PanicState = {
 /**
  * Get current panic state from storage
  */
-export function getPanicState(): PanicState {
+export function getPanicState(userId?: string): PanicState {
     if (typeof window === 'undefined') return DEFAULT_PANIC_STATE;
 
-    const stored = localStorage.getItem(PANIC_STATE_KEY);
+    const key = userId ? `${PANIC_STATE_KEY_PREFIX}${userId}` : GUEST_PANIC_STATE_KEY;
+    const stored = localStorage.getItem(key);
     if (stored) {
         return { ...DEFAULT_PANIC_STATE, ...JSON.parse(stored) };
     }
@@ -42,17 +44,18 @@ export function getPanicState(): PanicState {
 /**
  * Save panic state to storage
  */
-export function savePanicState(state: PanicState): void {
+export function savePanicState(state: PanicState, userId?: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(PANIC_STATE_KEY, JSON.stringify(state));
+    const key = userId ? `${PANIC_STATE_KEY_PREFIX}${userId}` : GUEST_PANIC_STATE_KEY;
+    localStorage.setItem(key, JSON.stringify(state));
 }
 
 /**
  * Activate Panic Button - immediately enter grounding mode
  * No confirmation dialogs - speed is critical
  */
-export function activatePanic(): PanicState {
-    const state = getPanicState();
+export function activatePanic(userId?: string): PanicState {
+    const state = getPanicState(userId);
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
 
@@ -71,15 +74,15 @@ export function activatePanic(): PanicState {
             : [...state.panicDays, today]
     };
 
-    savePanicState(newState);
+    savePanicState(newState, userId);
     return newState;
 }
 
 /**
  * Exit grounding mode - gentle return
  */
-export function exitGroundingMode(): PanicState {
-    const state = getPanicState();
+export function exitGroundingMode(userId?: string): PanicState {
+    const state = getPanicState(userId);
 
     const newState: PanicState = {
         ...state,
@@ -89,15 +92,15 @@ export function exitGroundingMode(): PanicState {
         // Keep today in panicDays
     };
 
-    savePanicState(newState);
+    savePanicState(newState, userId);
     return newState;
 }
 
 /**
  * Check if grounding timer has expired
  */
-export function isGroundingExpired(): boolean {
-    const state = getPanicState();
+export function isGroundingExpired(userId?: string): boolean {
+    const state = getPanicState(userId);
 
     if (!state.isActive || !state.groundingEndTime) {
         return true;
@@ -112,8 +115,8 @@ export function isGroundingExpired(): boolean {
 /**
  * Get remaining grounding time in seconds
  */
-export function getRemainingGroundingTime(): number {
-    const state = getPanicState();
+export function getRemainingGroundingTime(userId?: string): number {
+    const state = getPanicState(userId);
 
     if (!state.isActive || !state.groundingEndTime) {
         return 0;
@@ -129,38 +132,38 @@ export function getRemainingGroundingTime(): number {
 /**
  * Check if a specific date is a panic (protected) day
  */
-export function isPanicDay(date: string): boolean {
-    const state = getPanicState();
+export function isPanicDay(date: string, userId?: string): boolean {
+    const state = getPanicState(userId);
     return state.panicDays.includes(date);
 }
 
 /**
  * Get all panic days for momentum calculation
  */
-export function getPanicDays(): string[] {
-    const state = getPanicState();
+export function getPanicDays(userId?: string): string[] {
+    const state = getPanicState(userId);
     return state.panicDays;
 }
 
 /**
  * Update grounding duration (user preference)
  */
-export function setGroundingDuration(minutes: number): void {
-    const state = getPanicState();
+export function setGroundingDuration(minutes: number, userId?: string): void {
+    const state = getPanicState(userId);
     const clampedMinutes = Math.max(5, Math.min(30, minutes)); // 5-30 min range
 
     savePanicState({
         ...state,
         groundingDurationMinutes: clampedMinutes
-    });
+    }, userId);
 }
 
 /**
  * Reset panic state for new day (called on app load)
  * Keeps panic day history but unfreezes streak
  */
-export function resetDailyPanicState(): void {
-    const state = getPanicState();
+export function resetDailyPanicState(userId?: string): void {
+    const state = getPanicState(userId);
     const today = new Date().toISOString().slice(0, 10);
     const lastActivation = state.activatedAt
         ? new Date(state.activatedAt).toISOString().slice(0, 10)
@@ -174,15 +177,15 @@ export function resetDailyPanicState(): void {
             activatedAt: null,
             groundingEndTime: null,
             streakFrozen: false
-        });
+        }, userId);
     }
 }
 
 /**
  * Get anonymous activation stats for admin
  */
-export function getPanicStats(): { totalActivations: number; panicDaysCount: number } {
-    const state = getPanicState();
+export function getPanicStats(userId?: string): { totalActivations: number; panicDaysCount: number } {
+    const state = getPanicState(userId);
     return {
         totalActivations: state.totalActivations,
         panicDaysCount: state.panicDays.length

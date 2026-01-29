@@ -2,13 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {
-    getSystemConfig,
-    saveSystemConfig,
-    getAdminLog,
-    clearAdminLog,
-    SystemConfig
-} from '@/lib/admin';
+import { getSystemConfig, saveSystemConfig, getAdminLog, clearAdminLog, SystemConfig } from '@/lib/admin';
+import { getCurrentUser, User } from '@/lib/auth';
 import { QUOTES } from '@/lib/quotes';
 
 const TABS = [
@@ -23,25 +18,48 @@ const TABS = [
 
 export default function AdminPage() {
     const [config, setConfig] = useState<SystemConfig | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('xp');
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
+        const user = getCurrentUser();
+        setCurrentUser(user);
+        setIsAuthLoading(false);
         setConfig(getSystemConfig());
     }, []);
 
     const handleSave = () => {
         if (config) {
-            saveSystemConfig(config);
+            saveSystemConfig(config, currentUser?.id);
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
         }
     };
 
-    if (!config) {
+    if (isAuthLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-2xl">⚙️ Loading...</div>
+            </div>
+        );
+    }
+
+    if (!currentUser) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#0d1117] text-white p-6">
+                <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+                <p className="text-[#8b949e] mb-6">Please login from the main page to access admin settings.</p>
+                <a href="/" className="px-6 py-2 bg-[#1cb0f6] rounded-xl font-bold">Back to App</a>
+            </div>
+        );
+    }
+
+    if (!config) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-2xl">⚙️ Loading Config...</div>
             </div>
         );
     }
@@ -72,8 +90,8 @@ export default function AdminPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${activeTab === tab.id
-                                    ? 'bg-[#1cb0f6] text-white'
-                                    : 'bg-[#21262d] text-[#8b949e] hover:bg-[#30363d]'
+                                ? 'bg-[#1cb0f6] text-white'
+                                : 'bg-[#21262d] text-[#8b949e] hover:bg-[#30363d]'
                                 }`}
                         >
                             <span>{tab.icon}</span>
@@ -186,8 +204,8 @@ export default function AdminPage() {
                                                 coach: { ...config.coach, tone }
                                             })}
                                             className={`flex-1 py-3 rounded-xl font-semibold capitalize transition-all ${config.coach.tone === tone
-                                                    ? 'bg-[#58cc02] text-[#1a3a00]'
-                                                    : 'bg-[#0d1117] text-[#8b949e] hover:bg-[#21262d]'
+                                                ? 'bg-[#58cc02] text-[#1a3a00]'
+                                                : 'bg-[#0d1117] text-[#8b949e] hover:bg-[#21262d]'
                                                 }`}
                                         >
                                             {tone}
@@ -254,8 +272,8 @@ export default function AdminPage() {
                                                 music: { ...config.music, defaultCategory: cat }
                                             })}
                                             className={`flex-1 py-3 rounded-xl font-semibold capitalize transition-all ${config.music.defaultCategory === cat
-                                                    ? 'bg-[#1cb0f6] text-white'
-                                                    : 'bg-[#0d1117] text-[#8b949e] hover:bg-[#21262d]'
+                                                ? 'bg-[#1cb0f6] text-white'
+                                                : 'bg-[#0d1117] text-[#8b949e] hover:bg-[#21262d]'
                                                 }`}
                                         >
                                             {cat}
@@ -326,7 +344,7 @@ export default function AdminPage() {
                                 <h2 className="text-xl font-bold">📋 Admin Audit Log</h2>
                                 <button
                                     onClick={() => {
-                                        clearAdminLog();
+                                        clearAdminLog(currentUser?.id);
                                         window.location.reload();
                                     }}
                                     className="px-3 py-1 bg-[#ff4b4b]/20 text-[#ff4b4b] rounded-lg text-sm hover:bg-[#ff4b4b]/30"
@@ -336,13 +354,13 @@ export default function AdminPage() {
                             </div>
 
                             <div className="max-h-96 overflow-y-auto space-y-2">
-                                {getAdminLog().reverse().map((log, i) => (
+                                {getAdminLog(currentUser?.id).reverse().map((log, i) => (
                                     <div key={i} className="p-3 bg-[#0d1117] rounded-xl text-sm">
                                         <p className="text-[#6e7681]">{new Date(log.timestamp).toLocaleString()}</p>
                                         <p className="text-white font-semibold">{log.action}</p>
                                     </div>
                                 ))}
-                                {getAdminLog().length === 0 && (
+                                {getAdminLog(currentUser?.id).length === 0 && (
                                     <p className="text-[#6e7681] text-center py-8">No logs yet</p>
                                 )}
                             </div>
@@ -354,8 +372,8 @@ export default function AdminPage() {
                 <motion.button
                     onClick={handleSave}
                     className={`mt-6 w-full py-4 rounded-2xl font-bold text-lg transition-all ${saved
-                            ? 'bg-[#58cc02] text-[#1a3a00]'
-                            : 'bg-[#1cb0f6] text-white hover:bg-[#0095d4]'
+                        ? 'bg-[#58cc02] text-[#1a3a00]'
+                        : 'bg-[#1cb0f6] text-white hover:bg-[#0095d4]'
                         }`}
                     whileTap={{ scale: 0.98 }}
                 >

@@ -22,6 +22,8 @@ import DomainManager from '@/components/DomainManager';
 import AdminDashboard from '@/components/AdminDashboard';
 import WeeklyReflectionCard from '@/components/WeeklyReflectionCard';
 import AppearanceSettings from '@/components/AppearanceSettings';
+import AuthModal from '@/components/AuthModal';
+import { getCurrentUser, User, logout } from '@/lib/auth';
 import {
   getData,
   saveData,
@@ -29,12 +31,13 @@ import {
   hasTodayEntry,
   getTodayEntry,
   HabitData,
-  Entry
+  Entry,
+  migrateGuestData
 } from '@/lib/storage';
 import { calculateScore, updateStreak, checkStreakOnLoad } from '@/lib/scoring';
 import { checkBadges } from '@/lib/badges';
 import { getMessageType, generateFeedback } from '@/lib/coach';
-import { isFirstTimeUser, getSystemConfig, getUserSettings } from '@/lib/admin';
+import { isFirstTimeUser, getSystemConfig, getUserSettings, UserSettings } from '@/lib/admin';
 import { getHourlyQuote } from '@/lib/quotes';
 import { calculateMomentum, MomentumResult } from '@/lib/momentum';
 import { getPanicState, resetDailyPanicState, getPanicDays } from '@/lib/panic';
@@ -89,37 +92,50 @@ export default function Home() {
   const [momentum, setMomentum] = useState<MomentumResult | null>(null);
   const [activeDomains, setActiveDomains] = useState<Domain[]>([]);
   const [userSettings, setUserSettings] = useState<UserSettings>(getUserSettings());
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
+    // Check auth status
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    setIsAuthLoading(false);
+
+    if (!user) return; // Wait for login
     // Check if first-time user
     if (isFirstTimeUser()) {
       setShowSetup(true);
     }
 
     // Reset daily panic state
-    resetDailyPanicState();
+    resetDailyPanicState(user.id);
+
+    // Migrate guest data if first sync
+    if (!user.isGuest) {
+      migrateGuestData(user.id);
+    }
 
     // Check if currently in grounding mode
-    const panicState = getPanicState();
+    const panicState = getPanicState(user.id);
     if (panicState.isActive) {
       setIsGrounding(true);
     }
 
-    const loadedData = getData();
+    const loadedData = getData(user.id);
     checkStreakOnLoad(loadedData);
-    saveData(loadedData);
+    saveData(loadedData, user.id);
     setData(loadedData);
 
     // Initial settings load
-    const currentSettings = getUserSettings();
+    const currentSettings = getUserSettings(user.id);
     setUserSettings(currentSettings);
 
     // Load active domains
-    const domains = getActiveDomains();
+    const domains = getActiveDomains(user.id);
     setActiveDomains(domains);
 
     // Calculate momentum
-    const panicDays = getPanicDays();
+    const panicDays = getPanicDays(user.id);
     const momentumResult = calculateMomentum(loadedData, panicDays);
     setMomentum(momentumResult);
 
@@ -186,7 +202,7 @@ export default function Home() {
     const newBadges = checkBadges(newData.stats, newData.entries);
     newData.stats.badges = [...newData.stats.badges, ...newBadges];
 
-    saveData(newData);
+    saveData(newData, currentUser?.id);
     setData(newData);
     setSubmitted(true);
     setLastSubmission(domainsRecord);
@@ -215,6 +231,32 @@ export default function Home() {
       setMomentum(momentumResult);
     }
   }, [data]);
+
+  // Handle successful auth
+  const handleAuthComplete = () => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    window.location.reload(); // Refresh to trigger data fetching
+  };
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0d1117]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="text-5xl"
+        >
+          ⚡
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Mandatory Auth check
+  if (!currentUser) {
+    return <AuthModal onComplete={handleAuthComplete} />;
+  }
 
   // Show setup wizard for first-time users
   if (showSetup) {
@@ -274,9 +316,22 @@ export default function Home() {
               <h1 className="text-4xl font-black gradient-text tracking-tighter">
                 CompoundVerse
               </h1>
-              <p className="text-[#6e7681] text-xs font-medium uppercase tracking-widest">
-                Life Operating System
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-[#6e7681] text-xs font-medium uppercase tracking-widest">
+                  Life Operating System
+                </p>
+                {currentUser && (
+                  <>
+                    <span className="text-[#30363d]">|</span>
+                    <button
+                      onClick={() => logout()}
+                      className="text-[10px] font-bold text-[#6e7681] hover:text-red-400 uppercase transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
+              </div>
             </motion.div>
           </header>
 
@@ -300,6 +355,7 @@ export default function Home() {
             longestStreak={data.stats.longestStreak}
             activeDays={data.stats.activeDays}
             perfectDays={data.stats.perfectDays}
+            username={currentUser?.username || 'Player'}
           />
 
           {/* Momentum Ring - replaces brittle streak focus */}
@@ -504,6 +560,7 @@ export default function Home() {
                   <AppearanceSettings
                     settings={userSettings}
                     onUpdate={(s) => setUserSettings(s)}
+                    userId={currentUser?.id}
                   />
                 </div>
 
@@ -565,7 +622,7 @@ export default function Home() {
 
                 {/* Domain Manager */}
                 <div className="glass-card rounded-2xl p-5">
-                  <DomainManager />
+                  <DomainManager userId={currentUser?.id} />
                 </div>
 
                 {/* Admin Dashboard */}
@@ -573,7 +630,7 @@ export default function Home() {
                   <h3 className="font-semibold text-base mb-4 text-[#8b949e]">
                     📊 Analytics & Settings
                   </h3>
-                  <AdminDashboard />
+                  <AdminDashboard userId={currentUser?.id} />
                 </div>
               </motion.div>
             )}

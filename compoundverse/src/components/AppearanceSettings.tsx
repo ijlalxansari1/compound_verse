@@ -6,6 +6,7 @@ import { UserSettings, saveUserSettings } from '@/lib/admin';
 interface AppearanceSettingsProps {
     settings: UserSettings;
     onUpdate: (newSettings: UserSettings) => void;
+    userId?: string;
 }
 
 const THEMES = [
@@ -21,16 +22,16 @@ const INTENSITIES = [
     { id: 'static', name: 'Static', label: 'Minimal Focus' },
 ];
 
-export default function AppearanceSettings({ settings, onUpdate }: AppearanceSettingsProps) {
+export default function AppearanceSettings({ settings, onUpdate, userId }: AppearanceSettingsProps) {
     const handleThemeChange = (themeId: any) => {
         const newSettings = { ...settings, theme: themeId };
-        saveUserSettings(newSettings);
+        saveUserSettings(newSettings, userId);
         onUpdate(newSettings);
     };
 
     const handleIntensityChange = (intensityId: any) => {
         const newSettings = { ...settings, animationIntensity: intensityId };
-        saveUserSettings(newSettings);
+        saveUserSettings(newSettings, userId);
         onUpdate(newSettings);
     };
 
@@ -47,8 +48,8 @@ export default function AppearanceSettings({ settings, onUpdate }: AppearanceSet
                             key={theme.id}
                             onClick={() => handleThemeChange(theme.id)}
                             className={`p-4 rounded-2xl border-2 transition-all text-left ${settings.theme === theme.id
-                                    ? 'border-[#58cc02] bg-[#1a1c23]'
-                                    : 'border-[#30363d] bg-[#161b22] hover:border-[#6e7681]'
+                                ? 'border-[#58cc02] bg-[#1a1c23]'
+                                : 'border-[#30363d] bg-[#161b22] hover:border-[#6e7681]'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
@@ -77,8 +78,8 @@ export default function AppearanceSettings({ settings, onUpdate }: AppearanceSet
                             key={intensity.id}
                             onClick={() => handleIntensityChange(intensity.id)}
                             className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between ${settings.animationIntensity === intensity.id
-                                    ? 'border-[#1cb0f6] bg-[#1a1c23]'
-                                    : 'border-[#30363d] bg-[#161b22] hover:border-[#6e7681]'
+                                ? 'border-[#1cb0f6] bg-[#1a1c23]'
+                                : 'border-[#30363d] bg-[#161b22] hover:border-[#6e7681]'
                                 }`}
                         >
                             <div className="text-left">

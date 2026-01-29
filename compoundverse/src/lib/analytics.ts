@@ -60,12 +60,12 @@ export interface AnalyticsDashboard {
 /**
  * Calculate engagement statistics
  */
-export function calculateEngagementStats(data: HabitData): EngagementStats {
+export function calculateEngagementStats(data: HabitData, userId?: string): EngagementStats {
     const totalDays = data.entries.length;
     const activeDays = data.entries.filter(e => e.activeDay).length;
     const engagementRate = totalDays > 0 ? Math.round((activeDays / totalDays) * 100) : 0;
 
-    const panicDays = getPanicDays();
+    const panicDays = getPanicDays(userId);
     const momentum = calculateMomentum(data, panicDays);
 
     // Calculate 7-day and 30-day momentum averages
@@ -97,8 +97,8 @@ export function calculateEngagementStats(data: HabitData): EngagementStats {
 /**
  * Calculate domain usage statistics
  */
-export function calculateDomainStats(data: HabitData): DomainStats[] {
-    const domains = getActiveDomains();
+export function calculateDomainStats(data: HabitData, userId?: string): DomainStats[] {
+    const domains = getActiveDomains(userId);
     const today = new Date();
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -165,9 +165,9 @@ export function calculateDomainStats(data: HabitData): DomainStats[] {
 /**
  * Get panic button analytics
  */
-export function getPanicAnalytics(): PanicAnalytics {
-    const stats = getPanicStats();
-    const panicDays = getPanicDays();
+export function getPanicAnalytics(userId?: string): PanicAnalytics {
+    const stats = getPanicStats(userId);
+    const panicDays = getPanicDays(userId);
 
     const today = new Date();
     const sevenDaysAgo = new Date(today);
@@ -198,9 +198,9 @@ export function getPanicAnalytics(): PanicAnalytics {
 /**
  * Calculate momentum history for the last N days
  */
-export function getMomentumHistory(data: HabitData, days: number = 14): MomentumTrend[] {
+export function getMomentumHistory(data: HabitData, userId?: string, days: number = 14): MomentumTrend[] {
     const history: MomentumTrend[] = [];
-    const panicDays = getPanicDays();
+    const panicDays = getPanicDays(userId);
 
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
@@ -225,14 +225,14 @@ export function getMomentumHistory(data: HabitData, days: number = 14): Momentum
 /**
  * Get full analytics dashboard
  */
-export function getAnalyticsDashboard(): AnalyticsDashboard {
-    const data = getData();
+export function getAnalyticsDashboard(userId?: string): AnalyticsDashboard {
+    const data = getData(userId);
 
     return {
-        engagement: calculateEngagementStats(data),
-        domains: calculateDomainStats(data),
-        panic: getPanicAnalytics(),
-        momentumHistory: getMomentumHistory(data, 14),
+        engagement: calculateEngagementStats(data, userId),
+        domains: calculateDomainStats(data, userId),
+        panic: getPanicAnalytics(userId),
+        momentumHistory: getMomentumHistory(data, userId, 14),
         lastUpdated: new Date().toISOString()
     };
 }

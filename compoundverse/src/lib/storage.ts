@@ -35,7 +35,8 @@ export interface HabitData {
     stats: Stats;
 }
 
-const STORAGE_KEY = 'compoundverse_data';
+const STORAGE_KEY_PREFIX = 'compoundverse_data_';
+const GUEST_STORAGE_KEY = 'compoundverse_data'; // Legacy/Guest key
 
 const DEFAULT_DATA: HabitData = {
     entries: [],
@@ -51,19 +52,44 @@ const DEFAULT_DATA: HabitData = {
     }
 };
 
-export function getData(): HabitData {
+export function getData(userId?: string): HabitData {
     if (typeof window === 'undefined') return DEFAULT_DATA;
 
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const key = userId ? `${STORAGE_KEY_PREFIX}${userId}` : GUEST_STORAGE_KEY;
+    const stored = localStorage.getItem(key);
+
     if (stored) {
         return JSON.parse(stored);
     }
+
+    // If we have a userId but no data, maybe try to migrate from guest?
     return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
-export function saveData(data: HabitData): void {
+export function saveData(data: HabitData, userId?: string): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const key = userId ? `${STORAGE_KEY_PREFIX}${userId}` : GUEST_STORAGE_KEY;
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+/**
+ * Migrates data from the guest/anonymous key to a specific user key.
+ */
+export function migrateGuestData(userId: string): void {
+    if (typeof window === 'undefined') return;
+
+    const guestData = localStorage.getItem(GUEST_STORAGE_KEY);
+    if (guestData) {
+        const userKey = `${STORAGE_KEY_PREFIX}${userId}`;
+        const existingUserData = localStorage.getItem(userKey);
+
+        // Only migrate if the user doesn't already have cloud data
+        if (!existingUserData) {
+            localStorage.setItem(userKey, guestData);
+            // Optional: clear guest data? Users might want to keep it as a backup or clean up.
+            // localStorage.removeItem(GUEST_STORAGE_KEY); 
+        }
+    }
 }
 
 export function getToday(): string {

@@ -74,19 +74,20 @@ function FeatureToggle({
 
 interface AdminDashboardProps {
     onConfigChange?: () => void;
+    userId?: string;
 }
 
-export default function AdminDashboard({ onConfigChange }: AdminDashboardProps) {
+export default function AdminDashboard({ onConfigChange, userId }: AdminDashboardProps) {
     const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
     const [config, setConfig] = useState<SystemConfig | null>(null);
     const [activeSection, setActiveSection] = useState<'analytics' | 'toggles'>('analytics');
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [userId]);
 
     const loadData = () => {
-        setAnalytics(getAnalyticsDashboard());
+        setAnalytics(getAnalyticsDashboard(userId));
         setConfig(getSystemConfig());
     };
 
@@ -101,7 +102,7 @@ export default function AdminDashboard({ onConfigChange }: AdminDashboardProps) 
             }
         };
 
-        saveSystemConfig(updatedConfig);
+        saveSystemConfig(updatedConfig, userId);
         setConfig(updatedConfig);
         onConfigChange?.();
     };
@@ -121,8 +122,8 @@ export default function AdminDashboard({ onConfigChange }: AdminDashboardProps) 
                 <button
                     onClick={() => setActiveSection('analytics')}
                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${activeSection === 'analytics'
-                            ? 'bg-[#1cb0f6] text-white'
-                            : 'bg-[#21262d] text-[#8b949e]'
+                        ? 'bg-[#1cb0f6] text-white'
+                        : 'bg-[#21262d] text-[#8b949e]'
                         }`}
                 >
                     📊 Analytics
@@ -130,8 +131,8 @@ export default function AdminDashboard({ onConfigChange }: AdminDashboardProps) 
                 <button
                     onClick={() => setActiveSection('toggles')}
                     className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${activeSection === 'toggles'
-                            ? 'bg-[#1cb0f6] text-white'
-                            : 'bg-[#21262d] text-[#8b949e]'
+                        ? 'bg-[#1cb0f6] text-white'
+                        : 'bg-[#21262d] text-[#8b949e]'
                         }`}
                 >
                     ⚙️ Features
