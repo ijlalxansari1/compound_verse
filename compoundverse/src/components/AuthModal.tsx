@@ -22,12 +22,18 @@ export default function AuthModal({ onComplete }: AuthModalProps) {
         setError('');
 
         try {
+            let result;
             if (mode === 'register') {
-                await register(email, password, username);
+                result = await register(email, password, username);
             } else {
-                await login(email, password);
+                result = await login(email, password);
             }
-            onComplete();
+
+            if (result.error) {
+                setError(result.error);
+            } else {
+                onComplete();
+            }
         } catch (err: any) {
             setError(err.message || 'Authentication failed');
         } finally {
