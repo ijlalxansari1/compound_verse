@@ -49,9 +49,9 @@ function analyzeDomains(entries: Entry[]): { dominant: string | null; weakest: s
     if (entries.length === 0) return { dominant: null, weakest: null };
 
     const totals = {
-        health: entries.reduce((sum, e) => sum + e.health, 0),
-        faith: entries.reduce((sum, e) => sum + e.faith, 0),
-        career: entries.reduce((sum, e) => sum + e.career, 0)
+        health: entries.reduce((sum, e) => sum + (e.health ?? 0), 0),
+        faith: entries.reduce((sum, e) => sum + (e.faith ?? 0), 0),
+        career: entries.reduce((sum, e) => sum + (e.career ?? 0), 0)
     };
 
     const domains = Object.entries(totals).sort((a, b) => b[1] - a[1]);
