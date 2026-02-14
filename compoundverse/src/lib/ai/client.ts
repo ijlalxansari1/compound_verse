@@ -6,6 +6,6 @@ if (!apiKey) {
     console.warn('OPENAI_API_KEY is not defined in environment variables');
 }
 
-export const openai = new OpenAI({
+export const openai = apiKey ? new OpenAI({
     apiKey: apiKey,
-});
+}) : null;
