@@ -1,6 +1,6 @@
 'use client';
 
-import { supabase } from './supabase';
+import { createClient } from '@/lib/supabase/client';
 
 // CompoundVerse - Authentication with Supabase
 // Real authentication with email/password
@@ -19,6 +19,7 @@ const GUEST_KEY = 'compoundverse_guest_id';
  * Get current user from Supabase session or localStorage cache
  */
 export async function getCurrentUserAsync(): Promise<User | null> {
+    const supabase = createClient();
     try {
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -103,6 +104,7 @@ export function loginAsGuest(): void {
  * Logout - clears session
  */
 export async function logout(): Promise<void> {
+    const supabase = createClient();
     try {
         await supabase.auth.signOut();
     } catch (error) {
@@ -121,6 +123,7 @@ export async function register(
     password: string,
     username: string
 ): Promise<{ user: User | null; error: string | null }> {
+    const supabase = createClient();
     try {
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -160,6 +163,7 @@ export async function login(
     email: string,
     password: string
 ): Promise<{ user: User | null; error: string | null }> {
+    const supabase = createClient();
     try {
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -191,7 +195,8 @@ export async function login(
  * Listen for auth state changes
  */
 export function onAuthStateChange(callback: (user: User | null) => void) {
-    return supabase.auth.onAuthStateChange(async (event, session) => {
+    const supabase = createClient();
+    return supabase.auth.onAuthStateChange(async (event: string, session: any) => {
         if (session?.user) {
             const user: User = {
                 id: session.user.id,
@@ -212,9 +217,10 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
  * Send password reset email
  */
 export async function resetPassword(email: string): Promise<{ success: boolean; error: string | null }> {
+    const supabase = createClient();
     try {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/reset-password`
+            redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`
         });
 
         if (error) {
@@ -231,6 +237,7 @@ export async function resetPassword(email: string): Promise<{ success: boolean; 
  * Sign in with magic link (passwordless)
  */
 export async function signInWithMagicLink(email: string): Promise<{ success: boolean; error: string | null }> {
+    const supabase = createClient();
     try {
         const { error } = await supabase.auth.signInWithOtp({
             email,
@@ -253,6 +260,7 @@ export async function signInWithMagicLink(email: string): Promise<{ success: boo
  * Sign in with Google OAuth
  */
 export async function signInWithGoogle(): Promise<{ success: boolean; error: string | null }> {
+    const supabase = createClient();
     try {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -275,6 +283,7 @@ export async function signInWithGoogle(): Promise<{ success: boolean; error: str
  * Update password (after reset)
  */
 export async function updatePassword(newPassword: string): Promise<{ success: boolean; error: string | null }> {
+    const supabase = createClient();
     try {
         const { error } = await supabase.auth.updateUser({
             password: newPassword

@@ -7,12 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function AuthPage() {
+interface AuthPageProps {
+    initialView?: 'signin' | 'signup';
+}
+
+export default function AuthPage({ initialView = 'signup' }: AuthPageProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [view, setView] = useState<'signin' | 'signup'>('signup');
+    const [view, setView] = useState<'signin' | 'signup'>(initialView);
     const [shake, setShake] = useState(false);
 
     const router = useRouter();
@@ -160,7 +164,18 @@ export default function AuthPage() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-[#8b949e] ml-1 tracking-wider uppercase">Password</label>
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-bold text-[#8b949e] ml-1 tracking-wider uppercase">Password</label>
+                                            {view === 'signin' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => router.push('/forgot-password')}
+                                                    className="text-[10px] font-bold text-[#58a6ff] hover:text-[#79c0ff] tracking-wider uppercase transition-colors"
+                                                >
+                                                    Forgot Password?
+                                                </button>
+                                            )}
+                                        </div>
                                         <Input
                                             type="password"
                                             placeholder={view === 'signup' ? "Choose a strong password" : "••••••••"}

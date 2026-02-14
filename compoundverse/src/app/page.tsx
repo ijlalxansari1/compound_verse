@@ -73,8 +73,17 @@ export default function Home() {
   const [momentum, setMomentum] = useState<MomentumResult | null>(null);
 
   // Derived state
+  // Derived state
   const todayEntry = entries?.find(e => e.date === getToday());
-  const isSetup = !isFirstTimeUser();
+
+  // Smart Onboarding Logic:
+  // User is "Setup" if:
+  // 1. Local storage says so (isFirstTimeUser() is false)
+  // 2. OR they have history (entries.length > 0)
+  // 3. OR they have custom domains (activeDomains has non-core items)
+  const hasHistory = (entries && entries.length > 0);
+  const hasCustomDomains = (activeDomains && activeDomains.some(d => !d.isCore));
+  const isSetup = !isFirstTimeUser() || hasHistory || hasCustomDomains;
 
   // Load Initial Data
   useEffect(() => {

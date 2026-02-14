@@ -13,6 +13,7 @@ export default function LandingPage() {
     const [loading, setLoading] = useState(false);
     const [starterPack, setStarterPack] = useState<any[] | null>(null);
     const [showAuth, setShowAuth] = useState(false);
+    const [initialAuthView, setInitialAuthView] = useState<'signin' | 'signup'>('signup');
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -49,7 +50,7 @@ export default function LandingPage() {
     };
 
     if (showAuth) {
-        return <AuthPage />;
+        return <AuthPage initialView={initialAuthView} />;
     }
 
     if (showTour) {
@@ -63,6 +64,17 @@ export default function LandingPage() {
                 <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-green-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] bg-blue-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '10s' }} />
             </div>
+
+            {/* Nav */}
+            <nav className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
+                <div /> {/* Spacer */}
+                <button
+                    onClick={() => { setInitialAuthView('signin'); setShowAuth(true); }}
+                    className="text-sm font-bold text-[#8b949e] hover:text-white transition-colors uppercase tracking-wider bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/5"
+                >
+                    Already have an account? Login
+                </button>
+            </nav>
 
             <main className="relative z-10 w-full max-w-2xl text-center">
                 <AnimatePresence mode="wait">
