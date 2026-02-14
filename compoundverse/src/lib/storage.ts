@@ -74,23 +74,8 @@ const DEFAULT_DATA: HabitData = {
 /**
  * Migrates data from the guest/anonymous key to a specific user key.
  */
-export function migrateGuestData(userId: string): void {
-    if (typeof window === 'undefined') return;
-
-    const guestData = localStorage.getItem(GUEST_STORAGE_KEY);
-    if (guestData) {
-        const userKey = `${STORAGE_KEY_PREFIX}${userId}`;
-        const existingUserData = localStorage.getItem(userKey);
-
-        // Only migrate if the user doesn't already have data
-        if (!existingUserData) {
-            localStorage.setItem(userKey, guestData);
-            // Also sync to cloud
-            const data = JSON.parse(guestData) as HabitData;
-            syncToCloud(data, userId).catch(console.error);
-        }
-    }
-}
+// migrateGuestData removed as it relied on syncToCloud.
+// Guest data is now handled via the Onboarding Flow (pending_habits) in page.tsx.
 
 export function getToday(): string {
     return new Date().toISOString().slice(0, 10);
