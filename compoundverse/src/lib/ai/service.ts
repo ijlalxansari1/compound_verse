@@ -46,15 +46,15 @@ export async function generateGreeting(
     currentStreak: number,
     recentMood?: string
 ): Promise<string> {
-    if (!openai) return \`Good \${timeOfDay}, \${username}.\`;
+    if (!openai) return `Good ${timeOfDay}, ${username}.`;
 
     try {
         const prompt = `
         You are a supportive, stoic - but - warm habit coach.
-        User: ${ username }
-    Time: ${ timeOfDay }
-    Streak: ${ currentStreak } days
-    Mood: ${ recentMood || 'Neutral' }
+        User: ${username}
+    Time: ${timeOfDay}
+    Streak: ${currentStreak} days
+    Mood: ${recentMood || 'Neutral'}
 
         Generate a ONE - SENTENCE greeting(max 15 words) that acknowledges their streak and time of day. 
         Be inspiring but grounded.No exclamation marks unless streak > 10.
@@ -70,7 +70,7 @@ export async function generateGreeting(
         return response.choices[0].message.content || 'Welcome back to CompoundVerse.';
     } catch (error) {
         console.error('AI Greeting Error:', error);
-        return `Good ${ timeOfDay }, ${ username }. Ready to build ? `;
+        return `Good ${timeOfDay}, ${username}. Ready to build ? `;
     }
 }
 
@@ -91,8 +91,8 @@ export async function generateWeeklyAnalysis(
         }));
 
         const prompt = `
-        Analyze this habit data for ${ username }.
-        Data(last 14 days): ${ JSON.stringify(activityLog) }
+        Analyze this habit data for ${username}.
+        Data(last 14 days): ${JSON.stringify(activityLog)}
 
     1. Write a short paragraph(2 - 3 sentences) analyzing their consistency and balance(Health / Faith / Career).
         2. Provide 3 bullet - point actionable tips to improve.
