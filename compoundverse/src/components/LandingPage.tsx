@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AuthPage from '@/components/AuthPage';
+import OnboardingSlides from '@/components/OnboardingSlides';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function LandingPage() {
@@ -38,8 +39,21 @@ export default function LandingPage() {
         }
     };
 
+    const [showTour, setShowTour] = useState(false);
+
+    const handleBegin = () => {
+        if (starterPack) {
+            localStorage.setItem('pending_habits', JSON.stringify(starterPack));
+        }
+        setShowTour(true);
+    };
+
     if (showAuth) {
         return <AuthPage />;
+    }
+
+    if (showTour) {
+        return <OnboardingSlides onComplete={() => setShowAuth(true)} />;
     }
 
     return (
@@ -129,12 +143,12 @@ export default function LandingPage() {
 
                             <div className="flex flex-col items-center gap-4">
                                 <Button
-                                    onClick={() => setShowAuth(true)}
+                                    onClick={handleBegin}
                                     size="lg"
                                     className="h-14 px-8 text-lg rounded-full bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90 transition-opacity font-bold shadow-lg shadow-blue-500/20"
                                 >
                                     <Sparkles className="mr-2 h-5 w-5" />
-                                    Begin This Journey
+                                    Visualise The Journey
                                 </Button>
                                 <button
                                     onClick={() => setStarterPack(null)}

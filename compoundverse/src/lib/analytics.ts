@@ -3,7 +3,7 @@
 // Track engagement, momentum trends, and panic usage
 // ========================================
 
-import { HabitData, getData } from './storage';
+import { HabitData } from './storage';
 import { calculateMomentum, MomentumResult } from './momentum';
 import { getPanicStats, getPanicDays } from './panic';
 import { getActiveDomains, Domain } from './domains';
@@ -225,14 +225,4 @@ export function getMomentumHistory(data: HabitData, userId?: string, days: numbe
 /**
  * Get full analytics dashboard
  */
-export function getAnalyticsDashboard(userId?: string): AnalyticsDashboard {
-    const data = getData(userId);
-
-    return {
-        engagement: calculateEngagementStats(data, userId),
-        domains: calculateDomainStats(data, userId),
-        panic: getPanicAnalytics(userId),
-        momentumHistory: getMomentumHistory(data, userId, 14),
-        lastUpdated: new Date().toISOString()
-    };
-}
+// getAnalyticsDashboard removed as it relied on local storage and was unused.

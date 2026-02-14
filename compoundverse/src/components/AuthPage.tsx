@@ -12,6 +12,7 @@ export default function AuthPage() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [isSent, setIsSent] = useState(false);
+    const [view, setView] = useState<'signin' | 'signup'>('signup');
 
     const router = useRouter();
 
@@ -82,8 +83,24 @@ export default function AuthPage() {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 onSubmit={handleLogin}
-                                className="space-y-6"
-                            >
+                                <div className="flex gap-4 mb-6 p-1 bg-[#0d1117] rounded-xl border border-white/10">
+                                    <button
+                                        type="button"
+                                        onClick={() => setView('signup')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${view === 'signup' ? 'bg-[#238636] text-white shadow-lg' : 'text-[#8b949e] hover:text-white'}`}
+                                    >
+                                        Create Account
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setView('signin')}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${view === 'signin' ? 'bg-[#1f6feb] text-white shadow-lg' : 'text-[#8b949e] hover:text-white'}`}
+                                    >
+                                        Login
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-[#c9d1d9] ml-1">
                                         ENTER THE VERSE
@@ -115,7 +132,7 @@ export default function AuthPage() {
                                             Connecting...
                                         </span>
                                     ) : (
-                                        'Continue with Email →'
+                                        {view === 'signup' ? 'Create My Account →' : 'Sign In with Email →'}
                                     )}
                                 </Button>
 
