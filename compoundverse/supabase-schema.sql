@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 -- Entries table (daily check-ins)
 CREATE TABLE IF NOT EXISTS entries (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    domains JSONB NOT NULL DEFAULT '{}',
-    reflection TEXT DEFAULT '',
+    domains JSONB NOT NULL DEFAULT '{}'::jsonb,
+    reflection TEXT,
     daily_score INTEGER DEFAULT 0,
     active_day INTEGER DEFAULT 0,
     strong_day INTEGER DEFAULT 0,
@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS entries (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(user_id, date) -- One entry per user per day
 );
+-- Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_entries_user_date ON entries(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_entries_created_at ON entries(created_at);
 -- User stats table
 CREATE TABLE IF NOT EXISTS user_stats (
     user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,

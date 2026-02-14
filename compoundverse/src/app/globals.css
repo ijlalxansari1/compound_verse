@@ -1,736 +1,170 @@
 @import "tailwindcss";
 
-/* ========================================
-   Compoundverse - Duolingo + Disney+ Theme
-   Vibrant, Playful, Premium Feel
-   ======================================== */
+/* @plugin "tailwindcss-animate"; */
 
-:root {
-  /* Disney+ Dark Base */
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: #1c2128;
-  --bg-elevated: #21262d;
+@custom-variant dark (&:is(.dark *));
 
-  /* Duolingo Vibrant Colors */
-  --green-primary: #58cc02;
-  --green-dark: #4caf00;
-  --green-glow: rgba(88, 204, 2, 0.4);
-
-  --gold-primary: #ffc800;
-  --gold-dark: #ff9d00;
-  --gold-glow: rgba(255, 200, 0, 0.4);
-
-  --blue-primary: #1cb0f6;
-  --blue-dark: #0095d4;
-  --blue-glow: rgba(28, 176, 246, 0.4);
-
-  --red-primary: #ff4b4b;
-  --red-dark: #ea2b2b;
-
-  --purple-primary: #ce82ff;
-  --purple-dark: #a855f7;
-
-  --orange-primary: #ff9600;
-  --orange-dark: #e88800;
-
-  /* Text */
-  --text-primary: #ffffff;
-  --text-secondary: #8b949e;
-  --text-muted: #6e7681;
-
-  /* Borders */
-  --border-default: #30363d;
-  --border-muted: #21262d;
-}
-
-/* Aurora Theme (Teal/Emerald) */
-.theme-aurora {
-  --bg-primary: #0a1919;
-  --bg-secondary: #0f2424;
-  --bg-card: #152e2e;
-  --bg-elevated: #1b3838;
-  --green-primary: #10b981;
-  --green-dark: #059669;
-  --blue-primary: #34d399;
-  --blue-dark: #10b981;
-  --purple-primary: #6ee7b7;
-  --border-default: #1b3838;
-  --border-muted: #152e2e;
-  --blue-glow: rgba(52, 211, 153, 0.2);
-}
-
-/* Solar Theme (Amber/Gold) */
-.theme-solar {
-  --bg-primary: #1a160d;
-  --bg-secondary: #241f15;
-  --bg-card: #2e281c;
-  --bg-elevated: #383021;
-  --green-primary: #ffc800;
-  --green-dark: #cc9900;
-  --blue-primary: #fbbf24;
-  --blue-dark: #d97706;
-  --purple-primary: #f59e0b;
-  --border-default: #383021;
-  --border-muted: #2e281c;
-  --gold-glow: rgba(255, 200, 0, 0.2);
-}
-
-/* Monochrome Theme (Black/White/Gray) */
-.theme-monochrome {
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-card: #121212;
-  --bg-elevated: #1a1a1a;
-  --green-primary: #ffffff;
-  --green-dark: #cccccc;
-  --blue-primary: #eeeeee;
-  --blue-dark: #dddddd;
-  --purple-primary: #ffffff;
-  --border-default: #222222;
-  --border-muted: #111111;
-  --text-secondary: #aaaaaa;
-  --text-muted: #888888;
-  --green-glow: rgba(255, 255, 255, 0.1);
-}
-
-
-@theme inline {
-  --color-background: var(--bg-primary);
-  --color-foreground: var(--text-primary);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-/* Disney+ Style Background */
+:root {
+  /* Shadcn Core Defaults (Zinc/Slate base) */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 142.1 76.2% 36.3%;
+  /* Green Primary (Duolingo-ish) */
+  --primary-foreground: 355.7 100% 97.3%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 142.1 76.2% 36.3%;
+  --radius: 0.75rem;
+
+  /* Chart Colors */
+  --chart-1: 173 58% 39%;
+  --chart-2: 12 76% 61%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+}
+
+.dark {
+  /* Disney+ Dark Mode Base */
+  --background: 224 71% 4%;
+  /* #0a0a0f */
+  --foreground: 0 0% 95%;
+  --card: 224 71% 8%;
+  /* Slightly lighter than bg */
+  --card-foreground: 0 0% 95%;
+  --popover: 224 71% 8%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 88 100% 41%;
+  /* #58cc02 (Duolingo Green) */
+  --primary-foreground: 144.9 80.4% 10%;
+  --secondary: 215 27.9% 16.9%;
+  /* Elevated surface */
+  --secondary-foreground: 210 20% 98%;
+  --muted: 215 27.9% 16.9%;
+  --muted-foreground: 217.9 10.6% 64.9%;
+  --accent: 215 27.9% 16.9%;
+  --accent-foreground: 210 20% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 215 27.9% 16.9%;
+  --input: 215 27.9% 16.9%;
+  --ring: 88 100% 41%;
+
+  /* Chart Colors for Dark Mode */
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+
+  /* Custom Vibrant Palette via CSS vars (kept for reference) */
+  --color-green-primary: #58cc02;
+  --color-gold-primary: #ffc800;
+  --color-blue-primary: #1cb0f6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Utilities for Glassmorphism & Glow */
+@layer utilities {
+  .glass-card {
+    @apply bg-[#0a0a0f]/60 backdrop-blur-xl border border-white/10 shadow-xl;
+  }
+
+  .glass-card-hover {
+    @apply hover:bg-[#0a0a0f]/80 transition-all duration-300 hover:border-white/20 hover:shadow-2xl hover:scale-[1.01];
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .text-glow-sm {
+    text-shadow: 0 0 5px currentColor;
+  }
+
+  .box-glow {
+    box-shadow: 0 0 20px -5px var(--tw-shadow-color);
+  }
+
+  /* Shimmer Animation */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+}
+
+/* Global Background */
 body {
-  background: linear-gradient(180deg,
-      #0d1117 0%,
-      #0f1419 20%,
-      #0a0d12 50%,
-      #0d1117 100%);
-  color: var(--text-primary);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
-  min-height: 100vh;
-  position: relative;
-}
-
-/* Ambient Glow Effect */
-body::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
   background:
-    radial-gradient(ellipse at 30% 0%, rgba(88, 204, 2, 0.08) 0%, transparent 40%),
-    radial-gradient(ellipse at 70% 100%, rgba(28, 176, 246, 0.06) 0%, transparent 40%),
-    radial-gradient(ellipse at 100% 50%, rgba(255, 200, 0, 0.05) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Glass Card - Elevated */
-.glass-card {
-  background: linear-gradient(135deg,
-      rgba(28, 33, 40, 0.9) 0%,
-      rgba(22, 27, 34, 0.95) 100%);
-  border: 1px solid var(--border-default);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-}
-
-/* Duolingo-style Button */
-.btn-duo {
-  background: var(--green-primary);
-  color: #1a3a00;
-  font-weight: 700;
-  border: none;
-  border-radius: 16px;
-  padding: 16px 24px;
-  box-shadow:
-    0 4px 0 var(--green-dark),
-    0 8px 16px rgba(88, 204, 2, 0.3);
-  transition: all 0.15s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn-duo:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 6px 0 var(--green-dark),
-    0 12px 24px rgba(88, 204, 2, 0.4);
-}
-
-.btn-duo:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 2px 0 var(--green-dark),
-    0 4px 8px rgba(88, 204, 2, 0.2);
-}
-
-.btn-duo:disabled {
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-  box-shadow: 0 4px 0 var(--border-default);
-}
-
-/* XP Bar - Duolingo Style */
-.xp-track {
-  background: var(--bg-secondary);
-  border-radius: 99px;
-  height: 16px;
-  overflow: hidden;
-  border: 2px solid var(--border-default);
-}
-
-.xp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold-primary) 0%, var(--orange-primary) 100%);
-  border-radius: 99px;
-  position: relative;
-}
-
-.xp-fill::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 8px;
-  right: 8px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 99px;
-}
-
-/* Streak Fire - Animated */
-.streak-fire {
-  font-size: 48px;
-  filter: drop-shadow(0 0 10px var(--orange-primary));
-  animation: fire-pulse 1s infinite;
-}
-
-@keyframes fire-pulse {
-
-  0%,
-  100% {
-    transform: scale(1) rotate(-5deg);
-  }
-
-  50% {
-    transform: scale(1.1) rotate(5deg);
-  }
-}
-
-/* Domain Cards */
-.domain-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border-default);
-  border-radius: 20px;
-  transition: all 0.2s ease;
-}
-
-.domain-card:hover {
-  border-color: var(--border-default);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.domain-health {
-  border-left: 5px solid var(--green-primary);
-  background: linear-gradient(135deg, rgba(88, 204, 2, 0.1) 0%, transparent 50%);
-}
-
-.domain-faith {
-  border-left: 5px solid var(--gold-primary);
-  background: linear-gradient(135deg, rgba(255, 200, 0, 0.1) 0%, transparent 50%);
-}
-
-.domain-career {
-  border-left: 5px solid var(--blue-primary);
-  background: linear-gradient(135deg, rgba(28, 176, 246, 0.1) 0%, transparent 50%);
-}
-
-/* Checkbox - Duolingo Style */
-.checkbox-duo {
-  appearance: none;
-  width: 28px;
-  height: 28px;
-  border: 3px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.checkbox-duo:hover {
-  border-color: var(--green-primary);
-}
-
-.checkbox-duo:checked {
-  background: var(--green-primary);
-  border-color: var(--green-primary);
-}
-
-.checkbox-duo:checked::after {
-  content: '✓';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #1a3a00;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-/* Profile Card */
-.profile-card {
-  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-elevated) 100%);
-  border: 2px solid var(--border-default);
-  border-radius: 24px;
-}
-
-.avatar-ring {
-  background: linear-gradient(135deg, var(--gold-primary), var(--orange-primary));
-  padding: 4px;
-  border-radius: 50%;
-}
-
-.avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-}
-
-/* Level Badge - Duolingo Crown */
-.level-badge {
-  background: linear-gradient(135deg, var(--gold-primary) 0%, var(--orange-primary) 100%);
-  border-radius: 50%;
-  padding: 12px;
-  box-shadow:
-    0 4px 0 var(--orange-dark),
-    0 8px 20px rgba(255, 150, 0, 0.4);
-}
-
-/* Tab Bar - Disney+ Style */
-.tab-bar {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-default);
-  border-radius: 16px;
-  padding: 6px;
-}
-
-.tab-item {
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.tab-item.active {
-  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-dark) 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(28, 176, 246, 0.4);
-}
-
-/* Stats Badge */
-.stat-badge {
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-default);
-  border-radius: 12px;
-  padding: 8px 16px;
-}
-
-/* Confetti */
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(-100vh) rotate(0deg);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(100vh) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-.confetti {
-  position: fixed;
-  animation: confetti-fall 3s ease-out forwards;
-  z-index: 1000;
-}
-
-/* Music Player */
-.music-player {
-  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
-  border: 2px solid var(--border-default);
-  border-radius: 20px;
-}
-
-/* Duolingo Colors for Text */
-.text-duo-green {
-  color: var(--green-primary);
-}
-
-.text-duo-gold {
-  color: var(--gold-primary);
-}
-
-.text-duo-blue {
-  color: var(--blue-primary);
-}
-
-.text-duo-red {
-  color: var(--red-primary);
-}
-
-.text-duo-purple {
-  color: var(--purple-primary);
-}
-
-.text-duo-orange {
-  color: var(--orange-primary);
-}
-
-/* Gradient Text */
-.gradient-text {
-  background: linear-gradient(135deg, var(--green-primary) 0%, var(--blue-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* Animation Classes */
-.animate-bounce-slow {
-  animation: bounce-slow 2s infinite;
-}
-
-@keyframes bounce-slow {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-wiggle {
-  animation: wiggle 0.5s ease-in-out;
-}
-
-@keyframes wiggle {
-
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(-10deg);
-  }
-
-  75% {
-    transform: rotate(10deg);
-  }
-}
-
-/* ========================================
-   Grounding Mode - Calm, Minimal Styles
-   ======================================== */
-
-.grounding-mode {
-  background: #0a0a0f;
-}
-
-/* Breathing circle - soft glow */
-.breathing-circle {
-  background: linear-gradient(135deg,
-      rgba(139, 92, 246, 0.3) 0%,
-      rgba(28, 176, 246, 0.3) 100%);
-  border-radius: 50%;
-  transition: transform 4s ease-in-out;
-}
-
-.breathing-circle.inhale {
-  transform: scale(1.3);
-}
-
-.breathing-circle.exhale {
-  transform: scale(1);
-}
-
-/* Protected day badge */
-.protected-badge {
-  background: rgba(139, 92, 246, 0.2);
-  color: #8b5cf6;
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Momentum ring glow */
-.momentum-glow {
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-/* Calm text - reduced intensity */
-.text-calm {
-  color: #6e7681;
-  font-weight: 400;
-}
-
-/* Panic button subtle pulse */
-@keyframes subtle-pulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.3;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-}
-
-.panic-pulse {
-  animation: subtle-pulse 3s ease-in-out infinite;
-}
-
-/* ========================================
-   RESPONSIVE DESIGN SYSTEM
-   Mobile-first, then tablet, then desktop
-   ======================================== */
-
-/* Container - Adaptive max-widths */
-.container-app {
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-/* Mobile (default) - Up to 639px */
-/* Everything is mobile-first, so base styles are for mobile */
-
-/* Tablet - 640px to 1023px */
-@media (min-width: 640px) {
-  .container-app {
-    max-width: 560px;
-    padding: 0 24px;
-  }
-
-  .glass-card {
-    padding: 20px;
-  }
-
-  /* Two-column grid for tablet */
-  .responsive-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  /* Tab bar horizontal on tablet */
-  .tab-bar {
-    flex-direction: row;
-    justify-content: center;
-  }
-}
-
-/* Desktop - 1024px and up */
-@media (min-width: 1024px) {
-  .container-app {
-    max-width: 680px;
-    padding: 0 32px;
-  }
-
-  /* Breathing space on desktop */
-  body {
-    padding-top: 32px;
-  }
-
-  .glass-card {
-    padding: 24px;
-    border-radius: 20px;
-  }
-
-  /* Cards don't stretch */
-  .domain-card,
-  .profile-card {
-    max-width: 100%;
-  }
-
-  /* Larger profile on desktop */
-  .avatar {
-    width: 80px;
-    height: 80px;
-    font-size: 40px;
-  }
-
-  /* More comfortable spacing */
-  .responsive-grid {
-    gap: 20px;
-  }
-}
-
-/* Large Desktop - 1280px and up */
-@media (min-width: 1280px) {
-  .container-app {
-    max-width: 720px;
-  }
-
-  /* Center content with max breathing room */
-  body {
-    padding-top: 48px;
-  }
-}
-
-/* Responsive text utilities */
-.text-responsive-sm {
-  font-size: 12px;
-}
-
-.text-responsive-base {
-  font-size: 14px;
-}
-
-.text-responsive-lg {
-  font-size: 16px;
-}
-
-@media (min-width: 640px) {
-  .text-responsive-sm {
-    font-size: 13px;
-  }
-
-  .text-responsive-base {
-    font-size: 15px;
-  }
-
-  .text-responsive-lg {
-    font-size: 18px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .text-responsive-sm {
-    font-size: 14px;
-  }
-
-  .text-responsive-base {
-    font-size: 16px;
-  }
-
-  .text-responsive-lg {
-    font-size: 20px;
-  }
-}
-
-/* Responsive spacing */
-.space-responsive {
-  margin-bottom: 16px;
-}
-
-@media (min-width: 640px) {
-  .space-responsive {
-    margin-bottom: 20px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .space-responsive {
-    margin-bottom: 24px;
-  }
-}
-
-/* Fixed bottom nav positioning */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border-default);
-  padding: 12px 16px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-  z-index: 40;
-}
-
-@media (min-width: 640px) {
-  .bottom-nav {
-    padding: 16px 24px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
-  }
-}
-
-/* Prevent stretched cards on large screens */
-.card-constrained {
-  max-width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .card-constrained {
-    max-width: 640px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-/* Hide on mobile / Show on desktop utilities */
-.hide-mobile {
-  display: none;
-}
-
-.show-mobile {
-  display: block;
-}
-
-@media (min-width: 640px) {
-  .hide-mobile {
-    display: block;
-  }
-
-  .show-mobile {
-    display: none;
-  }
-}
-
-/* Safe area padding for mobile devices */
-.safe-area-top {
-  padding-top: max(16px, env(safe-area-inset-top));
-}
-
-.safe-area-bottom {
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+    radial-gradient(circle at 50% 0%, rgba(88, 204, 2, 0.15), transparent 40%),
+    radial-gradient(circle at 0% 50%, rgba(28, 176, 246, 0.1), transparent 40%),
+    radial-gradient(circle at 100% 50%, rgba(255, 200, 0, 0.1), transparent 40%),
+    #0a0a0f;
+  background-attachment: fixed;
 }

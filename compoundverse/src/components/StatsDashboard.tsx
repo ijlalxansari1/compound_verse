@@ -73,9 +73,10 @@ export default function StatsDashboard({ data }: StatsDashboardProps) {
     const twoWeekActive = lastTwoWeeksEntries.filter(e => e.activeDay).length;
 
     // Domain stats
-    const healthCount = entries.filter(e => e.health === 1).length;
-    const faithCount = entries.filter(e => e.faith === 1).length;
-    const careerCount = entries.filter(e => e.career === 1).length;
+    // Domain stats
+    const healthCount = entries.filter(e => e.domains?.['health'] === 1).length;
+    const faithCount = entries.filter(e => e.domains?.['faith'] === 1).length;
+    const careerCount = entries.filter(e => e.domains?.['career'] === 1).length;
     const totalDays = entries.length || 1;
 
     // Generate narrative

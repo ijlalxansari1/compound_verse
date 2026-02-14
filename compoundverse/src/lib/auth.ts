@@ -207,3 +207,85 @@ export function onAuthStateChange(callback: (user: User | null) => void) {
         }
     });
 }
+
+/**
+ * Send password reset email
+ */
+export async function resetPassword(email: string): Promise<{ success: boolean; error: string | null }> {
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${window.location.origin}/reset-password`
+        });
+
+        if (error) {
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to send reset email' };
+    }
+}
+
+/**
+ * Sign in with magic link (passwordless)
+ */
+export async function signInWithMagicLink(email: string): Promise<{ success: boolean; error: string | null }> {
+    try {
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                emailRedirectTo: `${window.location.origin}`
+            }
+        });
+
+        if (error) {
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to send magic link' };
+    }
+}
+
+/**
+ * Sign in with Google OAuth
+ */
+export async function signInWithGoogle(): Promise<{ success: boolean; error: string | null }> {
+    try {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}`
+            }
+        });
+
+        if (error) {
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Google sign-in failed' };
+    }
+}
+
+/**
+ * Update password (after reset)
+ */
+export async function updatePassword(newPassword: string): Promise<{ success: boolean; error: string | null }> {
+    try {
+        const { error } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+
+        if (error) {
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, error: null };
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Failed to update password' };
+    }
+}
