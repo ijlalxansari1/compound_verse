@@ -83,6 +83,7 @@ export default function AuthPage() {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 onSubmit={handleLogin}
+                            >
                                 <div className="flex gap-4 mb-6 p-1 bg-[#0d1117] rounded-xl border border-white/10">
                                     <button
                                         type="button"
@@ -101,44 +102,45 @@ export default function AuthPage() {
                                 </div>
 
                                 <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-[#c9d1d9] ml-1">
-                                        ENTER THE VERSE
-                                    </label>
-                                    <Input
-                                        type="email"
-                                        placeholder="traveler@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        className="bg-[#0d1117]/50 border-[#30363d] text-white h-12 rounded-xl focus:ring-green-500/50 focus:border-green-500 transition-all text-lg"
-                                    />
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-[#c9d1d9] ml-1">
+                                            ENTER THE VERSE
+                                        </label>
+                                        <Input
+                                            type="email"
+                                            placeholder="traveler@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            className="bg-[#0d1117]/50 border-[#30363d] text-white h-12 rounded-xl focus:ring-green-500/50 focus:border-green-500 transition-all text-lg"
+                                        />
+                                    </div>
 
-                                {message && (
-                                    <p className="text-sm text-red-400 text-center bg-red-500/10 p-2 rounded-lg border border-red-500/20">
-                                        {message}
-                                    </p>
-                                )}
-
-                                <Button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full h-12 bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl font-bold text-base"
-                                >
-                                    {loading ? (
-                                        <span className="flex items-center gap-2">
-                                            <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                                            Connecting...
-                                        </span>
-                                    ) : (
-                                        {view === 'signup' ? 'Create My Account →' : 'Sign In with Email →'}
+                                    {message && (
+                                        <p className="text-sm text-red-400 text-center bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                                            {message}
+                                        </p>
                                     )}
-                                </Button>
 
-                                <p className="text-center text-xs text-[#484f58] mt-4">
-                                    No password required. We'll send a magic link.
-                                </p>
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full h-12 bg-white text-black hover:bg-gray-200 hover:scale-[1.02] active:scale-[0.98] transition-all rounded-xl font-bold text-base"
+                                    >
+                                        {loading ? (
+                                            <span className="flex items-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                                                Connecting...
+                                            </span>
+                                        ) : (
+                                            view === 'signup' ? 'Create My Account →' : 'Sign In with Email →'
+                                        )}
+                                    </Button>
+
+                                    <p className="text-center text-xs text-[#484f58] mt-4">
+                                        No password required. We'll send a magic link.
+                                    </p>
+                                </div>
                             </motion.form>
                         ) : (
                             <motion.div
