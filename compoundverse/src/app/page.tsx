@@ -288,7 +288,6 @@ export default function Home() {
                     checked={checkedItems[domain.id] || []}
                     onToggle={(v) => handleToggle(domain.id, v)}
                     disabled={submitted}
-                    color={domain.color}
                   />
                 ))}
 
