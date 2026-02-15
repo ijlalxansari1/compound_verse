@@ -49,6 +49,7 @@ import { getHourlyQuote } from '@/lib/quotes';
 import { calculateMomentum, MomentumResult } from '@/lib/momentum';
 import { getPanicState, resetDailyPanicState, getPanicDays } from '@/lib/panic';
 import { getActiveDomains, Domain } from '@/lib/domains';
+import { buildDomainRecord, buildEntryPayload } from '@/lib/checkin';
 
 const TABS = [
   { id: 'checkin', label: 'Check-In', icon: '✅' },
@@ -122,7 +123,7 @@ export default function Home() {
         import('@/lib/domains').then(({ getDomains, updateDomainItems, addDomain }) => {
           const currentDomains = getDomains(user.id);
 
-          habits.forEach((h: any) => {
+          habits.forEach((h: { domain: string; title: string; intention: string }) => {
             // Normalize domain ID (lowercase)
             const domainId = h.domain.toLowerCase();
             const existing = currentDomains.find(d => d.id === domainId || d.name.toLowerCase() === domainId);
@@ -186,10 +187,7 @@ export default function Home() {
     const activeDomainIds = activeDomains.map(d => d.id);
 
     // Map checked items
-    const domainsRecord: Record<string, number> = {};
-    activeDomainIds.forEach(id => {
-      domainsRecord[id] = (checkedItems[id]?.length > 0) ? 1 : 0;
-    });
+    const domainsRecord = buildDomainRecord(activeDomainIds, checkedItems);
 
     const score = calculateScore(domainsRecord, activeDomainIds);
     const today = getToday();
@@ -198,16 +196,7 @@ export default function Home() {
     setSubmitted(true);
 
     // Save via Hook (Supabase)
-    saveEntry({
-      date: today,
-      domains: domainsRecord,
-      reflection: reflectionText,
-      dailyScore: score.dailyScore,
-      activeDay: score.activeDay,
-      strongDay: score.strongDay,
-      perfectDay: score.perfectDay,
-      xpEarned: score.xpEarned // Note: TotalXP calculation needs to happen on server or be re-fetched
-    });
+    saveEntry(buildEntryPayload(today, reflectionText, domainsRecord, score));
 
     // Feedback
     const msgType = getMessageType(score.dailyScore, score.perfectDay, score.strongDay, score.activeDay);
